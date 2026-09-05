@@ -1,0 +1,88 @@
+{
+  "_note": "File này do trang admin.html tạo ra. Có thể sửa tay nếu cần, miễn giữ đúng cấu trúc JSON.",
+  "site": {
+    "name": "Thẩm Mỹ Thanh Tuyền",
+    "hotline": "1900 0306",
+    "phone": "0909415066",
+    "email": "service@thammythanhtuyen.vn",
+    "facebook": "https://www.facebook.com/ThamMyThanhTuyen",
+    "messenger": "https://m.me/ThamMyThanhTuyen",
+    "zalo": "https://zalo.me/0909415066",
+    "youtubeChannel": "https://www.youtube.com/channel/UCrSc0Hp6PVOk-9icntZzdrg",
+    "instagram": "https://www.instagram.com/thammythanhtuyen",
+    "tiktok": "https://www.tiktok.com/@thammythanhtuyen",
+    "appsScriptUrl": ""
+  },
+  "github": {
+    "owner": "",
+    "repo": "",
+    "branch": "main",
+    "contentPath": "content.json",
+    "imagesPath": "assets/images"
+  },
+  "hours": {
+    "workingDays": [1, 2, 3, 4, 5, 6],
+    "workingDaysLabel": "Thứ 2 – Thứ 7",
+    "openTime": "08:00",
+    "closeTime": "20:00",
+    "closedLabel": "Chủ nhật nghỉ"
+  },
+  "pageIntros": {
+    "home": {
+      "kicker": "Phòng khám chuyên khoa phẫu thuật thẩm mỹ",
+      "titleHtml": "Vẻ đẹp <em>chuẩn gu</em>,<br>an toàn từ gốc.",
+      "lede": "ThS. BS Trần Thị Thanh Tuyền cùng đội ngũ y bác sĩ giàu kinh nghiệm đồng hành cùng bạn trên hành trình hoàn thiện nét đẹp riêng — với phương châm sản phẩm đẹp, an toàn, đúng giá."
+    },
+    "about": {
+      "kicker": "Giới thiệu",
+      "title": "Hành trình hơn 20 năm cùng ngành thẩm mỹ",
+      "lede": "Được thành lập bởi ThS. BS Trần Thị Thanh Tuyền, phòng khám luôn theo đuổi giá trị cốt lõi: sản phẩm đẹp, an toàn và đúng giá cho từng khách hàng."
+    },
+    "services": {
+      "kicker": "Dịch vụ",
+      "title": "Danh mục dịch vụ thẩm mỹ",
+      "lede": "Mỗi phương pháp được cá nhân hoá theo cấu trúc gương mặt và mong muốn riêng của từng khách hàng."
+    },
+    "team": {
+      "kicker": "Đội ngũ",
+      "title": "Đội ngũ bác sĩ & chuyên viên",
+      "lede": "Đồng hành cùng bạn từ buổi tư vấn đầu tiên đến khi hoàn thiện kết quả."
+    },
+    "beforeafter": {
+      "kicker": "Kết quả thực tế",
+      "title": "Trước & Sau",
+      "lede": "Kéo thanh trượt ở giữa mỗi hình để so sánh trước và sau khi thực hiện dịch vụ tại Thanh Tuyền."
+    },
+    "blog": {
+      "kicker": "Blog & Tin tức",
+      "title": "Kiến thức thẩm mỹ & câu chuyện khách hàng",
+      "lede": "Cập nhật từ đội ngũ chuyên môn Thanh Tuyền và những chia sẻ đáng tin cậy trong ngành."
+    },
+    "contact": {
+      "kicker": "Liên hệ",
+      "title": "Kết nối với Thanh Tuyền",
+      "lede": "Để lại thông tin hoặc ghé thăm trực tiếp một trong ba cơ sở của chúng tôi."
+    }
+  },
+  "images": {
+    "heroVisual": "",
+    "aboutDoctor": "",
+    "aboutDoctorFull": ""
+  },
+  "videos": [
+    { "title": "Hỏi gì đáp nấy", "subtitle": "Bác sĩ Tuyền", "youtubeId": "Rwv2bRNww7w" },
+    { "title": "Tâm lý của các chị em sau khi đi làm phẫu thuật thẩm mỹ", "subtitle": "Bác sĩ Tuyền", "youtubeId": "" },
+    { "title": "Đẹp hơn là đúng, đẹp là chưa đúng", "subtitle": "Thẩm mỹ Thanh Tuyền", "youtubeId": "" }
+  ],
+  "branches": [
+    { "id": "signature", "name": "Thanh Tuyền Signature", "address": "44 Huỳnh Tịnh Của, Phường Xuân Hoà, TP. Hồ Chí Minh (Q.3)", "image": "" },
+    { "id": "q10", "name": "Chi nhánh 1 — Quận 10", "address": "247 Đường 3 tháng 2, Phường Vườn Lài, TP. Hồ Chí Minh (Q.10)", "image": "" },
+    { "id": "angiang", "name": "Chi nhánh 2 — An Giang", "address": "1661 Trần Hưng Đạo, Phường Long Xuyên, An Giang", "image": "" }
+  ],
+  "team": [
+    { "id": "bs-tuyen", "name": "ThS. BS Trần Thị Thanh Tuyền", "role": "Người sáng lập · Phẫu thuật tạo hình thẩm mỹ", "desc": "Hơn 20 năm kinh nghiệm, phụ trách chuyên môn toàn hệ thống.", "branches": ["signature", "q10", "angiang"], "image": "" },
+    { "id": "bs-2", "name": "BS. Điều trị", "role": "Phẫu thuật thẩm mỹ mắt", "desc": "Chuyên sâu các kỹ thuật tạo hình vùng mắt và chân mày.", "branches": ["signature"], "image": "" },
+    { "id": "dd-truong", "name": "Điều dưỡng trưởng", "role": "Chăm sóc hậu phẫu", "desc": "Theo sát quá trình hồi phục, tái khám định kỳ cho khách hàng.", "branches": ["signature", "q10"], "image": "" },
+    { "id": "tv-1", "name": "Chuyên viên tư vấn", "role": "Tư vấn thẩm mỹ", "desc": "Đồng hành từ buổi tư vấn đầu tiên đến khi ra quyết định.", "branches": ["q10", "angiang"], "image": "" }
+  ]
+}

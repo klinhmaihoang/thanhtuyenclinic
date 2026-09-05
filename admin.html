@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Thẩm Mỹ Thanh Tuyền</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --maroon-900:#3B0B1E; --maroon-700:#6E1836; --maroon-500:#A83A5C;
+  --blush-300:#EAB7B4; --blush-100:#F9E5DF; --ivory:#FBF6F1; --ink:#2B1A20;
+  --ink-soft:#6E5A5E; --line:#E7D6D2; --ok:#2E7D4F; --err:#B23A48;
+  --font-display:'Fraunces',serif; --font-body:'Be Vietnam Pro',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;}
+body{margin:0;font-family:var(--font-body);color:var(--ink);background:var(--ivory);}
+h1,h2,h3{font-family:var(--font-display);color:var(--maroon-700);font-weight:500;margin:0 0 .4em;}
+p{color:var(--ink-soft);margin:0 0 1em;}
+a{color:var(--maroon-600);}
+button{font-family:inherit;cursor:pointer;}
+input,select,textarea{font-family:inherit;font-size:.92rem;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:#fff;width:100%;}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--maroon-500);outline-offset:1px;}
+label{display:block;font-size:.82rem;font-weight:600;color:var(--maroon-700);margin-bottom:6px;}
+.field{margin-bottom:16px;}
+.row{display:grid;gap:14px;}
+.row-2{grid-template-columns:1fr 1fr;}
+.row-3{grid-template-columns:1fr 1fr 1fr;}
+@media (max-width:720px){.row-2,.row-3{grid-template-columns:1fr;}}
+
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:999px;border:1px solid transparent;font-weight:600;font-size:.9rem;transition:.2s;}
+.btn-primary{background:var(--maroon-700);color:#fff;}
+.btn-primary:hover{background:var(--maroon-900);}
+.btn-ghost{background:#fff;color:var(--maroon-700);border-color:var(--maroon-700);}
+.btn-ghost:hover{background:var(--blush-100);}
+.btn-danger{background:#fff;color:var(--err);border-color:var(--err);}
+.btn-danger:hover{background:#fbe9ea;}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+
+/* ---- Login gate ---- */
+#loginGate{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-box{background:#fff;border-radius:16px;padding:40px;max-width:400px;width:100%;box-shadow:0 30px 60px -30px rgba(59,11,30,.4);}
+.login-box .note{font-size:.8rem;background:var(--blush-100);padding:12px 14px;border-radius:10px;margin-top:16px;}
+
+/* ---- App shell ---- */
+#app{display:none;}
+.topbar{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--line);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.topbar h1{font-size:1.2rem;margin:0;}
+.topbar .status{font-size:.8rem;color:var(--ink-soft);}
+.status.dirty{color:var(--err);font-weight:600;}
+.shell{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 61px);}
+@media (max-width:860px){.shell{grid-template-columns:1fr;}}
+.sidenav{border-right:1px solid var(--line);background:#fff;padding:18px 10px;}
+@media (max-width:860px){.sidenav{border-right:none;border-bottom:1px solid var(--line);display:flex;overflow-x:auto;gap:4px;}}
+.sidenav button{display:block;width:100%;text-align:left;padding:12px 14px;border-radius:10px;border:none;background:none;font-size:.9rem;font-weight:600;color:var(--ink-soft);white-space:nowrap;}
+.sidenav button:hover{background:var(--blush-100);}
+.sidenav button.active{background:var(--maroon-700);color:#fff;}
+.panels{padding:28px 32px;max-width:920px;}
+.panel{display:none;}
+.panel.active{display:block;}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:20px;}
+.card h3{font-size:1.05rem;margin-bottom:4px;}
+.card .hint{font-size:.82rem;margin-bottom:18px;}
+.pill{display:inline-block;font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--blush-100);color:var(--maroon-700);margin-left:8px;}
+
+.days-row{display:flex;gap:8px;flex-wrap:wrap;}
+.day-chip{padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:.84rem;font-weight:600;cursor:pointer;user-select:none;}
+.day-chip.on{background:var(--maroon-700);color:#fff;border-color:var(--maroon-700);}
+
+.img-uploader{display:flex;gap:16px;align-items:center;flex-wrap:wrap;}
+.img-preview{width:120px;height:90px;border-radius:10px;background:var(--blush-100);background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--ink-soft);text-align:center;padding:6px;flex:none;}
+.img-actions{display:flex;flex-direction:column;gap:8px;}
+.img-actions input[type=file]{font-size:.78rem;padding:6px;}
+.img-actions input[type=text]{font-size:.78rem;}
+
+.list-item{border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px;position:relative;}
+.list-item .remove-btn{position:absolute;top:12px;right:12px;background:none;border:none;color:var(--err);font-size:.78rem;font-weight:700;}
+.branch-checks{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;}
+.branch-check{font-size:.8rem;display:flex;align-items:center;gap:6px;background:var(--blush-100);padding:6px 10px;border-radius:999px;}
+
+table.data-table{width:100%;border-collapse:collapse;font-size:.85rem;}
+table.data-table th,table.data-table td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);}
+table.data-table th{color:var(--maroon-700);font-size:.75rem;text-transform:uppercase;letter-spacing:.03em;}
+
+.msg{padding:12px 14px;border-radius:10px;font-size:.85rem;margin-top:12px;display:none;}
+.msg.show{display:block;}
+.msg.ok{background:#e6f4ea;color:var(--ok);}
+.msg.err{background:#fbe9ea;color:var(--err);}
+
+textarea.json-editor{width:100%;min-height:420px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.8rem;white-space:pre;}
+.warn-box{background:#FEF6E7;border:1px solid #F0D89B;color:#7A5A00;padding:14px 16px;border-radius:10px;font-size:.85rem;margin-bottom:18px;}
+</style>
+</head>
+<body>
+
+<div id="loginGate">
+  <div class="login-box">
+    <h1 style="font-size:1.4rem;">Admin — Thanh Tuyền</h1>
+    <p>Nhập mật khẩu quản trị để chỉnh sửa nội dung website.</p>
+    <div class="field">
+      <label for="passInput">Mật khẩu</label>
+      <input type="password" id="passInput" placeholder="••••••••">
+    </div>
+    <button class="btn btn-primary" id="loginBtn" style="width:100%;justify-content:center;">Đăng nhập</button>
+    <div class="msg err" id="loginError">Sai mật khẩu, vui lòng thử lại.</div>
+    <div class="note">⚠️ Đây chỉ là lớp bảo vệ đơn giản phía trình duyệt (không phải xác thực máy chủ thật). Không nhập dữ liệu nhạy cảm và không chia sẻ mật khẩu này công khai. Đổi mật khẩu mặc định trong mã nguồn (biến <code>ADMIN_PASSCODE</code>) trước khi dùng thật.</div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="topbar">
+    <h1>🌸 Thanh Tuyền — Admin Panel</h1>
+    <div class="status" id="statusText">Đã tải content.json</div>
+  </div>
+  <div class="shell">
+    <nav class="sidenav" id="sidenav">
+      <button data-tab="tong-quan" class="active">Tổng quan &amp; liên hệ</button>
+      <button data-tab="gio-lam">Giờ làm &amp; đặt lịch</button>
+      <button data-tab="noi-dung">Nội dung trang</button>
+      <button data-tab="hinh-anh">Hình ảnh</button>
+      <button data-tab="video">Video Youtube</button>
+      <button data-tab="doi-ngu">Đội ngũ &amp; chi nhánh</button>
+      <button data-tab="lich-hen">Lịch hẹn</button>
+      <button data-tab="luu-github">Lưu &amp; GitHub</button>
+      <button data-tab="nang-cao">Nâng cao (JSON)</button>
+    </nav>
+    <div class="panels" id="panels">
+
+      <!-- ===================== TỔNG QUAN & LIÊN HỆ ===================== -->
+      <section class="panel active" data-panel="tong-quan">
+        <div class="card">
+          <h3>Thông tin liên hệ</h3>
+          <p class="hint">Các số điện thoại, link Zalo/Messenger… hiển thị ở nút liên hệ nhanh, footer và trang Liên hệ.</p>
+          <div class="row row-2">
+            <div class="field"><label>Tên phòng khám</label><input data-bind="site.name"></div>
+            <div class="field"><label>Hotline (hiển thị)</label><input data-bind="site.hotline" placeholder="1900 0306"></div>
+            <div class="field"><label>Số điện thoại (gọi trực tiếp)</label><input data-bind="site.phone" placeholder="0909415066 (không dấu cách)"></div>
+            <div class="field"><label>Email</label><input data-bind="site.email"></div>
+            <div class="field"><label>Link Facebook Page</label><input data-bind="site.facebook"></div>
+            <div class="field"><label>Link Messenger (m.me/...)</label><input data-bind="site.messenger"></div>
+            <div class="field"><label>Link Zalo (zalo.me/...)</label><input data-bind="site.zalo"></div>
+            <div class="field"><label>Link kênh Youtube</label><input data-bind="site.youtubeChannel"></div>
+            <div class="field"><label>Link Instagram</label><input data-bind="site.instagram"></div>
+            <div class="field"><label>Link TikTok</label><input data-bind="site.tiktok"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Kết nối đặt lịch (Google Apps Script) <span class="pill">quan trọng</span></h3>
+          <p class="hint">Dán URL Web App bạn deploy từ Google Apps Script (xem hướng dẫn trong README.md). Để trống nếu chưa có — form đặt lịch sẽ tự chuyển sang chế độ đơn giản (chỉ ghi nhận thông tin, không hiện giờ trống).</p>
+          <div class="field">
+            <label>Apps Script Web App URL</label>
+            <input data-bind="site.appsScriptUrl" placeholder="https://script.google.com/macros/s/xxxxx/exec">
+          </div>
+          <button class="btn btn-ghost" id="testApiBtn" type="button">Kiểm tra kết nối</button>
+          <div class="msg" id="testApiMsg"></div>
+        </div>
+      </section>
+
+      <!-- ===================== GIỜ LÀM & ĐẶT LỊCH ===================== -->
+      <section class="panel" data-panel="gio-lam">
+        <div class="card">
+          <h3>Giờ làm việc (hiển thị trên website)</h3>
+          <p class="hint">Phần này chỉ đổi chữ hiển thị trên trang (footer, trang chủ...).</p>
+          <div class="row row-2">
+            <div class="field"><label>Giờ mở cửa</label><input type="time" data-bind="hours.openTime"></div>
+            <div class="field"><label>Giờ đóng cửa</label><input type="time" data-bind="hours.closeTime"></div>
+          </div>
+          <div class="field"><label>Nhãn ngày làm việc</label><input data-bind="hours.workingDaysLabel" placeholder="Thứ 2 – Thứ 7"></div>
+          <div class="field"><label>Nhãn ngày nghỉ</label><input data-bind="hours.closedLabel" placeholder="Chủ nhật nghỉ"></div>
+        </div>
+
+        <div class="card">
+          <h3>Cấu hình đặt lịch thực tế (đồng bộ vào Google Sheet) <span class="pill">real-time</span></h3>
+          <p class="hint">Đây là cấu hình thật để hệ thống tính giờ trống — sẽ ghi thẳng vào tab "Settings" trong Google Sheet qua Apps Script. Cần đã điền Apps Script URL ở tab "Tổng quan" và đúng Khoá bí mật (đặt trong tab Settings, cột ADMIN_SECRET_KEY của Sheet).</p>
+
+          <div class="field"><label>Khoá bí mật (ADMIN_SECRET_KEY)</label><input type="password" id="secretKeyInput" placeholder="Dán đúng khoá đã đặt trong Google Sheet"></div>
+
+          <div class="field">
+            <label>Ngày làm việc trong tuần</label>
+            <div class="days-row" id="workingDaysChips"></div>
+          </div>
+          <div class="row row-3">
+            <div class="field"><label>Giờ mở cửa</label><input type="time" id="cfgOpenTime"></div>
+            <div class="field"><label>Giờ đóng cửa</label><input type="time" id="cfgCloseTime"></div>
+            <div class="field"><label>Đặt trước tối đa (ngày)</label><input type="number" id="cfgMaxDays" min="1" value="30"></div>
+          </div>
+          <div class="row row-3">
+            <div class="field"><label>Thời lượng 1 lịch hẹn (phút)</label><input type="number" id="cfgDuration" min="10" step="5" value="60"></div>
+            <div class="field"><label>Thời gian nghỉ giữa các lịch (phút)</label><input type="number" id="cfgBuffer" min="0" step="5" value="30"></div>
+            <div class="field"><label>Khoá lịch trước (giờ)</label><input type="number" id="cfgLead" min="0" value="2"></div>
+          </div>
+          <p class="hint" style="margin-top:-8px;">Ví dụ: thời lượng 60 phút + nghỉ giữa 60 phút ⇒ lịch trống là 8:00–9:00, rồi 10:00–11:00... Đổi "nghỉ giữa" thành 30 phút ⇒ lịch cách nhau 1 tiếng rưỡi liên tục.</p>
+
+          <div class="field"><label>Email admin nhận thông báo (cách nhau bằng dấu phẩy)</label><input id="cfgAdminEmails" placeholder="admin@..., nhanvien@..."></div>
+          <div class="field"><label>Email nhân viên (tuỳ chọn)</label><input id="cfgStaffEmails"></div>
+          <div class="field"><label>Zalo Webhook URL (tuỳ chọn — xem README)</label><input id="cfgZaloWebhook" placeholder="Điền sau khi có link Zalo/Make/Zapier của khách"></div>
+
+          <button class="btn btn-primary" id="saveBookingSettingsBtn" type="button">Lưu cấu hình lên Google Sheet</button>
+          <button class="btn btn-ghost" id="loadBookingSettingsBtn" type="button">Tải cấu hình hiện tại từ Sheet</button>
+          <div class="msg" id="bookingSettingsMsg"></div>
+        </div>
+
+        <div class="card">
+          <h3>Đồng bộ đội ngũ &amp; chi nhánh sang lịch đặt hẹn</h3>
+          <p class="hint">Danh sách bác sĩ/chi nhánh dùng để hiển thị trên site được chỉnh ở tab "Đội ngũ &amp; chi nhánh". Bấm nút dưới đây để đẩy đúng danh sách đó sang Google Sheet (bảng Doctors/Branches) làm nguồn dữ liệu cho form đặt lịch.</p>
+          <button class="btn btn-ghost" id="syncDoctorsBtn" type="button">Đồng bộ danh sách bác sĩ</button>
+          <button class="btn btn-ghost" id="syncBranchesBtn" type="button">Đồng bộ danh sách chi nhánh</button>
+          <div class="msg" id="syncMsg"></div>
+        </div>
+      </section>
+
+      <!-- ===================== NỘI DUNG TRANG ===================== -->
+      <section class="panel" data-panel="noi-dung">
+        <div id="pageIntrosWrap"></div>
+      </section>
+
+      <!-- ===================== HÌNH ẢNH ===================== -->
+      <section class="panel" data-panel="hinh-anh">
+        <div class="card">
+          <h3>Ảnh chính website</h3>
+          <p class="hint">Ảnh được lưu trực tiếp trong content.json (định dạng base64) để không cần thao tác upload file riêng — đơn giản và luôn đồng bộ. Với nhiều ảnh chất lượng cao, file content.json sẽ nặng hơn, cân nhắc dùng link ảnh ngoài (dán URL) nếu cần tối ưu tốc độ tải.</p>
+          <div id="mainImagesWrap"></div>
+        </div>
+      </section>
+
+      <!-- ===================== VIDEO ===================== -->
+      <section class="panel" data-panel="video">
+        <div class="card">
+          <h3>Video Youtube (trang chủ)</h3>
+          <p class="hint">Dán link Youtube đầy đủ hoặc chỉ mã video (11 ký tự sau "v=" hoặc "youtu.be/").</p>
+          <div id="videosWrap"></div>
+          <button class="btn btn-ghost" id="addVideoBtn" type="button">+ Thêm video</button>
+        </div>
+      </section>
+
+      <!-- ===================== ĐỘI NGŨ & CHI NHÁNH ===================== -->
+      <section class="panel" data-panel="doi-ngu">
+        <div class="card">
+          <h3>Chi nhánh</h3>
+          <div id="branchesWrap"></div>
+          <button class="btn btn-ghost" id="addBranchBtn" type="button">+ Thêm chi nhánh</button>
+        </div>
+        <div class="card">
+          <h3>Đội ngũ bác sĩ &amp; nhân viên</h3>
+          <div id="teamWrap"></div>
+          <button class="btn btn-ghost" id="addTeamBtn" type="button">+ Thêm thành viên</button>
+        </div>
+      </section>
+
+      <!-- ===================== LỊCH HẸN ===================== -->
+      <section class="panel" data-panel="lich-hen">
+        <div class="card">
+          <h3>Lịch hẹn sắp tới</h3>
+          <p class="hint">Đọc trực tiếp từ Google Sheet qua Apps Script (cần đúng khoá bí mật đã nhập ở tab "Giờ làm &amp; đặt lịch").</p>
+          <button class="btn btn-ghost" id="loadBookingsBtn" type="button">Tải danh sách lịch hẹn</button>
+          <div class="msg" id="bookingsMsg"></div>
+          <div style="overflow-x:auto;margin-top:16px;">
+            <table class="data-table" id="bookingsTable"></table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== LƯU & GITHUB ===================== -->
+      <section class="panel" data-panel="luu-github">
+        <div class="card">
+          <h3>Cách A — Tải file, tự đẩy lên GitHub</h3>
+          <p class="hint">Tải file content.json đã chỉnh, ghi đè vào file cùng tên trong repo của bạn rồi <code>git add . && git commit -m "update content" && git push</code> như bình thường.</p>
+          <button class="btn btn-primary" id="downloadJsonBtn" type="button">⬇ Tải content.json</button>
+          <div class="field" style="margin-top:18px;">
+            <label>Hoặc nạp lại 1 file content.json đã có để chỉnh tiếp</label>
+            <input type="file" id="importJsonInput" accept="application/json">
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Cách B — Lưu thẳng lên GitHub (tự động)</h3>
+          <div class="warn-box">⚠️ Personal Access Token sẽ được lưu trong trình duyệt (localStorage) của máy này. Chỉ dùng trên thiết bị cá nhân, không dùng ở máy tính công cộng/dùng chung. Token chỉ cần quyền "repo contents" (read/write) trên đúng 1 repo này.</div>
+          <div class="row row-2">
+            <div class="field"><label>GitHub owner (username/tổ chức)</label><input data-bind="github.owner" placeholder="vd: khanhlinh"></div>
+            <div class="field"><label>Tên repository</label><input data-bind="github.repo" placeholder="vd: thanh-tuyen-website"></div>
+            <div class="field"><label>Nhánh (branch)</label><input data-bind="github.branch" placeholder="main"></div>
+            <div class="field"><label>Đường dẫn file content.json trong repo</label><input data-bind="github.contentPath" placeholder="content.json"></div>
+          </div>
+          <div class="field">
+            <label>Personal Access Token</label>
+            <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxxxxxx">
+          </div>
+          <button class="btn btn-primary" id="commitGithubBtn" type="button">Lưu trực tiếp lên GitHub</button>
+          <div class="msg" id="githubMsg"></div>
+        </div>
+      </section>
+
+      <!-- ===================== NÂNG CAO (JSON) ===================== -->
+      <section class="panel" data-panel="nang-cao">
+        <div class="card">
+          <h3>Chỉnh JSON trực tiếp</h3>
+          <p class="hint">Dành cho các phần chưa có form riêng (ví dụ danh sách dịch vụ chi tiết). Sửa cẩn thận — sai cú pháp JSON sẽ không áp dụng được.</p>
+          <textarea class="json-editor" id="jsonEditor"></textarea>
+          <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn btn-ghost" id="jsonRefreshBtn" type="button">Nạp lại từ dữ liệu hiện tại</button>
+            <button class="btn btn-primary" id="jsonApplyBtn" type="button">Áp dụng JSON này</button>
+          </div>
+          <div class="msg" id="jsonMsg"></div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+
+/* =========================================================
+   CẤU HÌNH — ĐỔI MẬT KHẨU NÀY TRƯỚC KHI DÙNG THẬT
+   ========================================================= */
+var ADMIN_PASSCODE = 'thanhtuyen2026';
+
+/* =========================================================
+   LOGIN GATE (chỉ là lớp chắn phía trình duyệt, xem cảnh báo trong UI)
+   ========================================================= */
+var SESSION_KEY = 'tmtt_admin_session';
+function showApp(){
+  document.getElementById('loginGate').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  boot();
+}
+if(sessionStorage.getItem(SESSION_KEY) === '1'){ showApp(); }
+document.getElementById('loginBtn').addEventListener('click', doLogin);
+document.getElementById('passInput').addEventListener('keydown', function(e){ if(e.key === 'Enter') doLogin(); });
+function doLogin(){
+  var val = document.getElementById('passInput').value;
+  if(val === ADMIN_PASSCODE){
+    sessionStorage.setItem(SESSION_KEY, '1');
+    showApp();
+  } else {
+    document.getElementById('loginError').classList.add('show');
+  }
+}
+
+/* =========================================================
+   STATE
+   ========================================================= */
+var DEFAULT_CONTENT = {
+  site:{ name:"Thẩm Mỹ Thanh Tuyền", hotline:"1900 0306", phone:"0909415066", email:"service@thammythanhtuyen.vn",
+    facebook:"", messenger:"", zalo:"", youtubeChannel:"", instagram:"", tiktok:"", appsScriptUrl:"" },
+  github:{ owner:"", repo:"", branch:"main", contentPath:"content.json", imagesPath:"assets/images" },
+  hours:{ workingDays:[1,2,3,4,5,6], workingDaysLabel:"Thứ 2 – Thứ 7", openTime:"08:00", closeTime:"20:00", closedLabel:"Chủ nhật nghỉ" },
+  pageIntros:{
+    home:{kicker:"",titleHtml:"",lede:""}, about:{kicker:"",title:"",lede:""}, services:{kicker:"",title:"",lede:""},
+    team:{kicker:"",title:"",lede:""}, beforeafter:{kicker:"",title:"",lede:""}, blog:{kicker:"",title:"",lede:""}, contact:{kicker:"",title:"",lede:""}
+  },
+  images:{ heroVisual:"", aboutDoctor:"", aboutDoctorFull:"" },
+  videos:[], branches:[], team:[], services:{mui:[],mat:[],"mat-khuon":[]}
+};
+var draft = JSON.parse(JSON.stringify(DEFAULT_CONTENT));
+var dirty = false;
+
+function markDirty(){
+  dirty = true;
+  var el = document.getElementById('statusText');
+  el.textContent = 'Có thay đổi chưa lưu';
+  el.classList.add('dirty');
+}
+function markClean(msg){
+  dirty = false;
+  var el = document.getElementById('statusText');
+  el.textContent = msg || 'Đã lưu';
+  el.classList.remove('dirty');
+}
+window.addEventListener('beforeunload', function(e){ if(dirty){ e.preventDefault(); e.returnValue=''; } });
+
+/* =========================================================
+   HELPERS: đường dẫn dạng "a.b[0].c"
+   ========================================================= */
+function getPath(obj, path){
+  return path.split(/\.|\[|\]/).filter(Boolean).reduce(function(o,k){ return (o===undefined||o===null)?undefined:o[k]; }, obj);
+}
+function setPath(obj, path, value){
+  var keys = path.split(/\.|\[|\]/).filter(Boolean);
+  var cur = obj;
+  for(var i=0;i<keys.length-1;i++){
+    var k = keys[i];
+    if(cur[k] === undefined || cur[k] === null) cur[k] = /^\d+$/.test(keys[i+1]) ? [] : {};
+    cur = cur[k];
+  }
+  cur[keys[keys.length-1]] = value;
+}
+function slugify(str){
+  return (str||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'') || ('item-'+Date.now());
+}
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* Gắn lại toàn bộ input [data-bind] trong 1 khối DOM với dữ liệu hiện tại của draft */
+function bindForm(root){
+  root.querySelectorAll('[data-bind]').forEach(function(el){
+    var path = el.dataset.bind;
+    var val = getPath(draft, path);
+    if(el.type === 'checkbox'){ el.checked = !!val; }
+    else { el.value = (val === undefined || val === null) ? '' : val; }
+    if(el.dataset.boundListener) return; // tránh gắn trùng listener khi re-render
+    el.dataset.boundListener = '1';
+    el.addEventListener('input', function(){
+      var v = el.type === 'checkbox' ? el.checked : el.value;
+      setPath(draft, path, v);
+      markDirty();
+    });
+  });
+}
+
+/* =========================================================
+   TAB SWITCHING
+   ========================================================= */
+document.getElementById('sidenav').addEventListener('click', function(e){
+  var btn = e.target.closest('button[data-tab]');
+  if(!btn) return;
+  document.querySelectorAll('#sidenav button').forEach(function(b){ b.classList.toggle('active', b===btn); });
+  document.querySelectorAll('.panel').forEach(function(p){ p.classList.toggle('active', p.dataset.panel===btn.dataset.tab); });
+  if(btn.dataset.tab === 'nang-cao') refreshJsonEditor();
+});
+
+/* =========================================================
+   BOOT: tải content.json rồi render toàn bộ form
+   ========================================================= */
+function boot(){
+  fetch('content.json', {cache:'no-store'}).then(function(r){ if(!r.ok) throw 0; return r.json(); })
+    .then(function(json){
+      draft = deepMerge(DEFAULT_CONTENT, json);
+      markClean('Đã tải content.json hiện có');
+    })
+    .catch(function(){
+      draft = JSON.parse(JSON.stringify(DEFAULT_CONTENT));
+      markClean('Không tìm thấy content.json — bắt đầu với nội dung mặc định');
+    })
+    .finally(renderAll);
+}
+function deepMerge(base, override){
+  var out = JSON.parse(JSON.stringify(base));
+  Object.keys(override||{}).forEach(function(k){
+    if(k.indexOf('_')===0) return;
+    if(Array.isArray(override[k])) out[k] = override[k];
+    else if(override[k] && typeof override[k] === 'object') out[k] = deepMerge(out[k]||{}, override[k]);
+    else out[k] = override[k];
+  });
+  return out;
+}
+
+function renderAll(){
+  bindForm(document);
+  renderPageIntros();
+  renderMainImages();
+  renderVideos();
+  renderBranches();
+  renderTeam();
+  renderWorkingDayChips();
+}
+
+/* =========================================================
+   NỘI DUNG TRANG (pageIntros)
+   ========================================================= */
+var PAGE_LABELS = {
+  home:'Trang chủ', about:'Giới thiệu', services:'Dịch vụ', team:'Đội ngũ bác sĩ',
+  beforeafter:'Trước & Sau', blog:'Blog', contact:'Liên hệ'
+};
+function renderPageIntros(){
+  var wrap = document.getElementById('pageIntrosWrap');
+  wrap.innerHTML = Object.keys(PAGE_LABELS).map(function(key){
+    var titleField = key === 'home' ? 'titleHtml' : 'title';
+    var titleLabel = key === 'home' ? 'Tiêu đề (được phép chèn thẻ &lt;em&gt;, &lt;br&gt;)' : 'Tiêu đề';
+    return '<div class="card"><h3>'+PAGE_LABELS[key]+'</h3>'+
+      '<div class="field"><label>Kicker (dòng nhỏ phía trên tiêu đề)</label><input data-bind="pageIntros.'+key+'.kicker"></div>'+
+      '<div class="field"><label>'+titleLabel+'</label><input data-bind="pageIntros.'+key+'.'+titleField+'"></div>'+
+      '<div class="field"><label>Mô tả ngắn (lede)</label><textarea rows="2" data-bind="pageIntros.'+key+'.lede"></textarea></div>'+
+      '</div>';
+  }).join('');
+  bindForm(wrap);
+}
+
+/* =========================================================
+   HÌNH ẢNH CHÍNH
+   ========================================================= */
+var MAIN_IMAGE_FIELDS = [
+  {key:'heroVisual', label:'Ảnh nền khối hero (trang chủ)'},
+  {key:'aboutDoctor', label:'Ảnh chân dung bác sĩ (trang chủ + preview nhỏ)'},
+  {key:'aboutDoctorFull', label:'Ảnh bác sĩ khổ lớn (trang Giới thiệu)'}
+];
+function renderMainImages(){
+  var wrap = document.getElementById('mainImagesWrap');
+  wrap.innerHTML = MAIN_IMAGE_FIELDS.map(function(f){
+    var val = draft.images && draft.images[f.key];
+    return imageUploaderHTML('images.'+f.key, f.label, val);
+  }).join('');
+  wireImageUploaders(wrap);
+}
+function imageUploaderHTML(path, label, val){
+  return '<div class="field img-uploader" data-img-path="'+path+'">'+
+    '<div class="img-preview" '+(val?'style="background-image:url(\''+val+'\')"':'')+'>'+(val?'':'Chưa có ảnh')+'</div>'+
+    '<div class="img-actions">'+
+      '<label style="margin-bottom:0;">'+label+'</label>'+
+      '<input type="file" accept="image/*" class="img-file-input">'+
+      '<input type="text" class="img-url-input" placeholder="...hoặc dán URL ảnh" value="'+(val && val.indexOf('data:')!==0 ? esc(val):'')+'">'+
+    '</div></div>';
+}
+function wireImageUploaders(root){
+  root.querySelectorAll('[data-img-path]').forEach(function(box){
+    var path = box.dataset.imgPath;
+    var preview = box.querySelector('.img-preview');
+    box.querySelector('.img-file-input').addEventListener('change', function(e){
+      var file = e.target.files[0];
+      if(!file) return;
+      resizeImageToDataURL(file, 1400, 0.82).then(function(dataUrl){
+        setPath(draft, path, dataUrl);
+        preview.style.backgroundImage = 'url("'+dataUrl+'")';
+        preview.textContent = '';
+        markDirty();
+      });
+    });
+    box.querySelector('.img-url-input').addEventListener('input', function(e){
+      var url = e.target.value.trim();
+      setPath(draft, path, url);
+      if(url){ preview.style.backgroundImage = 'url("'+url+'")'; preview.textContent=''; }
+      markDirty();
+    });
+  });
+}
+function resizeImageToDataURL(file, maxDim, quality){
+  return new Promise(function(resolve){
+    var img = new Image();
+    var reader = new FileReader();
+    reader.onload = function(ev){
+      img.onload = function(){
+        var w = img.width, h = img.height;
+        if(w > maxDim || h > maxDim){
+          var scale = maxDim / Math.max(w,h);
+          w = Math.round(w*scale); h = Math.round(h*scale);
+        }
+        var canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/* =========================================================
+   VIDEOS
+   ========================================================= */
+function extractYoutubeId(input){
+  input = (input||'').trim();
+  if(/^[a-zA-Z0-9_-]{11}$/.test(input)) return input;
+  var m = input.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : input;
+}
+function renderVideos(){
+  var wrap = document.getElementById('videosWrap');
+  wrap.innerHTML = (draft.videos||[]).map(function(v, i){
+    return '<div class="list-item" data-idx="'+i+'">'+
+      '<button type="button" class="remove-btn" data-remove-video="'+i+'">Xoá</button>'+
+      '<div class="field"><label>Tiêu đề</label><input data-bind="videos['+i+'].title"></div>'+
+      '<div class="field"><label>Phụ đề</label><input data-bind="videos['+i+'].subtitle"></div>'+
+      '<div class="field"><label>Link hoặc mã Youtube</label><input class="yt-input" data-idx="'+i+'" value="'+esc(v.youtubeId||'')+'" placeholder="https://youtu.be/xxxxxxxxxxx"></div>'+
+      '</div>';
+  }).join('') || '<p>Chưa có video nào.</p>';
+  bindForm(wrap);
+  wrap.querySelectorAll('[data-remove-video]').forEach(function(btn){
+    btn.addEventListener('click', function(){ draft.videos.splice(Number(btn.dataset.removeVideo),1); markDirty(); renderVideos(); });
+  });
+  wrap.querySelectorAll('.yt-input').forEach(function(inp){
+    inp.addEventListener('change', function(){
+      draft.videos[Number(inp.dataset.idx)].youtubeId = extractYoutubeId(inp.value);
+      inp.value = draft.videos[Number(inp.dataset.idx)].youtubeId;
+      markDirty();
+    });
+  });
+}
+document.getElementById('addVideoBtn').addEventListener('click', function(){
+  draft.videos = draft.videos || [];
+  draft.videos.push({title:'Video mới', subtitle:'', youtubeId:''});
+  markDirty(); renderVideos();
+});
+
+/* =========================================================
+   CHI NHÁNH
+   ========================================================= */
+function renderBranches(){
+  var wrap = document.getElementById('branchesWrap');
+  wrap.innerHTML = (draft.branches||[]).map(function(b, i){
+    return '<div class="list-item">'+
+      '<button type="button" class="remove-btn" data-remove-branch="'+i+'">Xoá</button>'+
+      '<div class="row row-2">'+
+        '<div class="field"><label>Tên chi nhánh</label><input data-bind="branches['+i+'].name"></div>'+
+        '<div class="field"><label>Mã (id, không dấu, không trùng)</label><input data-bind="branches['+i+'].id"></div>'+
+      '</div>'+
+      '<div class="field"><label>Địa chỉ</label><input data-bind="branches['+i+'].address"></div>'+
+      '</div>';
+  }).join('') || '<p>Chưa có chi nhánh nào.</p>';
+  bindForm(wrap);
+  wrap.querySelectorAll('[data-remove-branch]').forEach(function(btn){
+    btn.addEventListener('click', function(){ draft.branches.splice(Number(btn.dataset.removeBranch),1); markDirty(); renderBranches(); });
+  });
+}
+document.getElementById('addBranchBtn').addEventListener('click', function(){
+  draft.branches = draft.branches || [];
+  var n = draft.branches.length + 1;
+  draft.branches.push({id:'chi-nhanh-'+n, name:'Chi nhánh mới', address:''});
+  markDirty(); renderBranches();
+});
+
+/* =========================================================
+   ĐỘI NGŨ
+   ========================================================= */
+function renderTeam(){
+  var wrap = document.getElementById('teamWrap');
+  var branches = draft.branches || [];
+  wrap.innerHTML = (draft.team||[]).map(function(m, i){
+    var checks = branches.map(function(b){
+      var checked = (m.branches||[]).indexOf(b.id) !== -1;
+      return '<label class="branch-check"><input type="checkbox" data-team-branch="'+i+'" data-branch-id="'+b.id+'" '+(checked?'checked':'')+'> '+b.name+'</label>';
+    }).join('');
+    var val = m.image;
+    return '<div class="list-item">'+
+      '<button type="button" class="remove-btn" data-remove-team="'+i+'">Xoá</button>'+
+      '<div class="row row-2">'+
+        '<div class="field"><label>Họ tên</label><input data-bind="team['+i+'].name"></div>'+
+        '<div class="field"><label>Vai trò / chức danh</label><input data-bind="team['+i+'].role"></div>'+
+      '</div>'+
+      '<div class="field"><label>Mô tả ngắn</label><textarea rows="2" data-bind="team['+i+'].desc"></textarea></div>'+
+      imageUploaderHTML('team['+i+'].image', 'Ảnh', val)+
+      '<div class="field"><label>Làm việc tại chi nhánh</label><div class="branch-checks">'+(checks||'<span class="hint">Chưa có chi nhánh nào, thêm ở trên trước.</span>')+'</div></div>'+
+      '</div>';
+  }).join('') || '<p>Chưa có thành viên nào.</p>';
+  bindForm(wrap);
+  wireImageUploaders(wrap);
+  wrap.querySelectorAll('[data-remove-team]').forEach(function(btn){
+    btn.addEventListener('click', function(){ draft.team.splice(Number(btn.dataset.removeTeam),1); markDirty(); renderTeam(); });
+  });
+  wrap.querySelectorAll('[data-team-branch]').forEach(function(chk){
+    chk.addEventListener('change', function(){
+      var idx = Number(chk.dataset.teamBranch);
+      var bId = chk.dataset.branchId;
+      var m = draft.team[idx];
+      m.branches = m.branches || [];
+      var pos = m.branches.indexOf(bId);
+      if(chk.checked && pos === -1) m.branches.push(bId);
+      if(!chk.checked && pos !== -1) m.branches.splice(pos,1);
+      markDirty();
+    });
+  });
+}
+document.getElementById('addTeamBtn').addEventListener('click', function(){
+  draft.team = draft.team || [];
+  draft.team.push({id:'nv-'+(draft.team.length+1), name:'Thành viên mới', role:'', desc:'', branches:[], image:''});
+  markDirty(); renderTeam();
+});
+
+/* Tự cập nhật id (slug) khi đổi tên chi nhánh/thành viên lần đầu để tránh trùng lặp thủ công */
+document.getElementById('panels').addEventListener('blur', function(e){
+  var el = e.target;
+  if(!el.dataset || !el.dataset.bind) return;
+  var m;
+  if((m = el.dataset.bind.match(/^branches\[(\d+)\]\.name$/))){
+    var b = draft.branches[Number(m[1])];
+    if(b && !b.id) { b.id = slugify(b.name); renderBranches(); }
+  }
+  if((m = el.dataset.bind.match(/^team\[(\d+)\]\.name$/))){
+    var t = draft.team[Number(m[1])];
+    if(t && (!t.id || t.id.indexOf('nv-')===0)) { t.id = slugify(t.name); }
+  }
+}, true);
+
+/* =========================================================
+   TEST API / APPS SCRIPT
+   ========================================================= */
+function apiUrl(){ return (draft.site && draft.site.appsScriptUrl || '').trim(); }
+function apiGet(params){
+  var url = apiUrl();
+  if(!url) return Promise.reject(new Error('Chưa nhập Apps Script URL'));
+  var qs = Object.keys(params).map(function(k){ return encodeURIComponent(k)+'='+encodeURIComponent(params[k]); }).join('&');
+  return fetch(url+'?'+qs).then(function(r){ return r.json(); });
+}
+function apiPost(data){
+  var url = apiUrl();
+  if(!url) return Promise.reject(new Error('Chưa nhập Apps Script URL'));
+  return fetch(url, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(data)}).then(function(r){ return r.json(); });
+}
+function showMsg(id, ok, text){
+  var el = document.getElementById(id);
+  el.className = 'msg show ' + (ok ? 'ok' : 'err');
+  el.textContent = text;
+}
+
+document.getElementById('testApiBtn').addEventListener('click', function(){
+  apiGet({action:'ping'}).then(function(res){
+    showMsg('testApiMsg', !!res.ok, res.ok ? 'Kết nối thành công! ' + res.message : 'Lỗi: ' + (res.error||'không xác định'));
+  }).catch(function(err){ showMsg('testApiMsg', false, 'Không kết nối được: ' + err.message); });
+});
+
+/* =========================================================
+   CẤU HÌNH ĐẶT LỊCH TRÊN GOOGLE SHEET
+   ========================================================= */
+var sheetSettings = { workingDays:[1,2,3,4,5,6], openTime:'08:00', closeTime:'20:00', slotDurationMinutes:60, bufferMinutes:30, bookingLeadHours:2, bookingMaxDaysAhead:30 };
+var DAY_LABELS = [{v:1,l:'T2'},{v:2,l:'T3'},{v:3,l:'T4'},{v:4,l:'T5'},{v:5,l:'T6'},{v:6,l:'T7'},{v:0,l:'CN'}];
+function renderWorkingDayChips(){
+  var wrap = document.getElementById('workingDaysChips');
+  wrap.innerHTML = DAY_LABELS.map(function(d){
+    var on = sheetSettings.workingDays.indexOf(d.v) !== -1;
+    return '<div class="day-chip'+(on?' on':'')+'" data-day="'+d.v+'">'+d.l+'</div>';
+  }).join('');
+  wrap.querySelectorAll('.day-chip').forEach(function(chip){
+    chip.addEventListener('click', function(){
+      var v = Number(chip.dataset.day);
+      var pos = sheetSettings.workingDays.indexOf(v);
+      if(pos===-1) sheetSettings.workingDays.push(v); else sheetSettings.workingDays.splice(pos,1);
+      chip.classList.toggle('on');
+    });
+  });
+}
+function fillBookingSettingsForm(){
+  document.getElementById('cfgOpenTime').value = sheetSettings.openTime;
+  document.getElementById('cfgCloseTime').value = sheetSettings.closeTime;
+  document.getElementById('cfgMaxDays').value = sheetSettings.bookingMaxDaysAhead;
+  document.getElementById('cfgDuration').value = sheetSettings.slotDurationMinutes;
+  document.getElementById('cfgBuffer').value = sheetSettings.bufferMinutes;
+  document.getElementById('cfgLead').value = sheetSettings.bookingLeadHours;
+  renderWorkingDayChips();
+}
+fillBookingSettingsForm();
+
+document.getElementById('loadBookingSettingsBtn').addEventListener('click', function(){
+  apiGet({action:'getConfig'}).then(function(res){
+    if(!res.ok){ showMsg('bookingSettingsMsg', false, 'Lỗi: '+res.error); return; }
+    sheetSettings = Object.assign(sheetSettings, res.settings);
+    fillBookingSettingsForm();
+    showMsg('bookingSettingsMsg', true, 'Đã tải cấu hình hiện tại từ Google Sheet.');
+  }).catch(function(err){ showMsg('bookingSettingsMsg', false, 'Không kết nối được: '+err.message); });
+});
+
+document.getElementById('saveBookingSettingsBtn').addEventListener('click', function(){
+  var secret = document.getElementById('secretKeyInput').value.trim();
+  if(!secret){ showMsg('bookingSettingsMsg', false, 'Vui lòng nhập Khoá bí mật (ADMIN_SECRET_KEY).'); return; }
+  var settings = {
+    OPEN_TIME: document.getElementById('cfgOpenTime').value,
+    CLOSE_TIME: document.getElementById('cfgCloseTime').value,
+    WORKING_DAYS: sheetSettings.workingDays.slice().sort().join(','),
+    SLOT_DURATION_MINUTES: document.getElementById('cfgDuration').value,
+    BUFFER_MINUTES: document.getElementById('cfgBuffer').value,
+    BOOKING_LEAD_HOURS: document.getElementById('cfgLead').value,
+    BOOKING_MAX_DAYS_AHEAD: document.getElementById('cfgMaxDays').value,
+    ADMIN_EMAILS: document.getElementById('cfgAdminEmails').value,
+    STAFF_EMAILS: document.getElementById('cfgStaffEmails').value,
+    ZALO_WEBHOOK_URL: document.getElementById('cfgZaloWebhook').value
+  };
+  apiPost({action:'updateSettings', secret:secret, settings:settings}).then(function(res){
+    showMsg('bookingSettingsMsg', !!res.ok, res.ok ? 'Đã lưu cấu hình đặt lịch lên Google Sheet.' : 'Lỗi: '+res.error);
+  }).catch(function(err){ showMsg('bookingSettingsMsg', false, 'Không kết nối được: '+err.message); });
+});
+
+document.getElementById('syncDoctorsBtn').addEventListener('click', function(){
+  var secret = document.getElementById('secretKeyInput').value.trim();
+  if(!secret){ showMsg('syncMsg', false, 'Vui lòng nhập Khoá bí mật ở trên trước.'); return; }
+  var items = (draft.team||[]).map(function(m){
+    return { DoctorID:m.id||slugify(m.name), Ten:m.name, ChiNhanhIDs:(m.branches||[]).join(','), VaiTro:m.role||'', HoatDong:true };
+  });
+  apiPost({action:'syncDoctors', secret:secret, items:items}).then(function(res){
+    showMsg('syncMsg', !!res.ok, res.ok ? 'Đã đồng bộ '+res.count+' bác sĩ lên Google Sheet.' : 'Lỗi: '+res.error);
+  }).catch(function(err){ showMsg('syncMsg', false, 'Không kết nối được: '+err.message); });
+});
+document.getElementById('syncBranchesBtn').addEventListener('click', function(){
+  var secret = document.getElementById('secretKeyInput').value.trim();
+  if(!secret){ showMsg('syncMsg', false, 'Vui lòng nhập Khoá bí mật ở trên trước.'); return; }
+  var items = (draft.branches||[]).map(function(b){
+    return { BranchID:b.id||slugify(b.name), Ten:b.name, DiaChi:b.address||'', HoatDong:true };
+  });
+  apiPost({action:'syncBranches', secret:secret, items:items}).then(function(res){
+    showMsg('syncMsg', !!res.ok, res.ok ? 'Đã đồng bộ '+res.count+' chi nhánh lên Google Sheet.' : 'Lỗi: '+res.error);
+  }).catch(function(err){ showMsg('syncMsg', false, 'Không kết nối được: '+err.message); });
+});
+
+/* =========================================================
+   LỊCH HẸN
+   ========================================================= */
+document.getElementById('loadBookingsBtn').addEventListener('click', function(){
+  var secret = document.getElementById('secretKeyInput').value.trim();
+  if(!secret){ showMsg('bookingsMsg', false, 'Vui lòng nhập Khoá bí mật ở tab "Giờ làm & đặt lịch" trước.'); return; }
+  var today = new Date(); today.setDate(today.getDate()-1);
+  var fromDate = today.toISOString().slice(0,10);
+  apiPost({action:'listBookings', secret:secret, fromDate:fromDate}).then(function(res){
+    if(!res.ok){ showMsg('bookingsMsg', false, 'Lỗi: '+res.error); return; }
+    showMsg('bookingsMsg', true, 'Tải thành công '+res.bookings.length+' lịch hẹn.');
+    var rows = res.bookings.map(function(b){
+      return '<tr><td>'+b.Ngay+' '+b.Gio+'</td><td>'+b.HoTen+'</td><td>'+b.SDT+'</td><td>'+b.ChiNhanh+'</td><td>'+b.BacSi+'</td><td>'+b.DichVu+'</td><td>'+b.TrangThai+'</td></tr>';
+    }).join('');
+    document.getElementById('bookingsTable').innerHTML = '<tr><th>Ngày giờ</th><th>Khách hàng</th><th>SĐT</th><th>Chi nhánh</th><th>Bác sĩ</th><th>Dịch vụ</th><th>Trạng thái</th></tr>' + rows;
+  }).catch(function(err){ showMsg('bookingsMsg', false, 'Không kết nối được: '+err.message); });
+});
+
+/* =========================================================
+   LƯU: TẢI FILE (Cách A) / NHẬP FILE / GITHUB (Cách B)
+   ========================================================= */
+document.getElementById('downloadJsonBtn').addEventListener('click', function(){
+  var blob = new Blob([JSON.stringify(draft, null, 2)], {type:'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'content.json';
+  a.click();
+  markClean('Đã tải content.json — nhớ đẩy file lên GitHub');
+});
+
+document.getElementById('importJsonInput').addEventListener('change', function(e){
+  var file = e.target.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    try{
+      var json = JSON.parse(ev.target.result);
+      draft = deepMerge(DEFAULT_CONTENT, json);
+      renderAll();
+      markClean('Đã nạp file content.json vừa chọn');
+    }catch(err){ alert('File JSON không hợp lệ: ' + err.message); }
+  };
+  reader.readAsText(file);
+});
+
+var GH_TOKEN_KEY = 'tmtt_admin_gh_token';
+(function(){ var saved = localStorage.getItem(GH_TOKEN_KEY); if(saved) document.getElementById('githubToken').value = saved; })();
+
+document.getElementById('commitGithubBtn').addEventListener('click', function(){
+  var token = document.getElementById('githubToken').value.trim();
+  var owner = draft.github.owner, repo = draft.github.repo, branch = draft.github.branch || 'main', path = draft.github.contentPath || 'content.json';
+  if(!token || !owner || !repo){ showMsg('githubMsg', false, 'Vui lòng điền đủ owner, repo và Personal Access Token.'); return; }
+  localStorage.setItem(GH_TOKEN_KEY, token);
+
+  var apiBase = 'https://api.github.com/repos/'+owner+'/'+repo+'/contents/'+path;
+  var headers = { 'Authorization':'token '+token, 'Accept':'application/vnd.github+json' };
+
+  showMsg('githubMsg', true, 'Đang lưu lên GitHub...');
+  fetch(apiBase+'?ref='+branch, {headers:headers})
+    .then(function(r){ return r.status===200 ? r.json() : null; })
+    .then(function(existing){
+      var content = draft; // đảm bảo github token không bị lưu vào content.json
+      var body = {
+        message: 'Cập nhật nội dung website từ Admin Panel',
+        content: b64EncodeUnicode(JSON.stringify(content, null, 2)),
+        branch: branch
+      };
+      if(existing && existing.sha) body.sha = existing.sha;
+      return fetch(apiBase, { method:'PUT', headers: Object.assign({'Content-Type':'application/json'}, headers), body: JSON.stringify(body) });
+    })
+    .then(function(r){ return r.json().then(function(j){ return {status:r.status, json:j}; }); })
+    .then(function(res){
+      if(res.status===200 || res.status===201){
+        showMsg('githubMsg', true, 'Đã lưu thành công lên GitHub! GitHub Pages sẽ cập nhật sau khoảng 1 phút.');
+        markClean('Đã lưu lên GitHub');
+      } else {
+        showMsg('githubMsg', false, 'Lỗi GitHub: ' + (res.json.message || res.status));
+      }
+    })
+    .catch(function(err){ showMsg('githubMsg', false, 'Lỗi kết nối: ' + err.message); });
+});
+function b64EncodeUnicode(str){
+  return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1){ return String.fromCharCode('0x'+p1); }));
+}
+
+/* =========================================================
+   NÂNG CAO — JSON THÔ
+   ========================================================= */
+function refreshJsonEditor(){ document.getElementById('jsonEditor').value = JSON.stringify(draft, null, 2); }
+document.getElementById('jsonRefreshBtn').addEventListener('click', refreshJsonEditor);
+document.getElementById('jsonApplyBtn').addEventListener('click', function(){
+  try{
+    var parsed = JSON.parse(document.getElementById('jsonEditor').value);
+    draft = parsed;
+    renderAll();
+    markDirty();
+    showMsg('jsonMsg', true, 'Đã áp dụng JSON mới vào form.');
+  }catch(err){
+    showMsg('jsonMsg', false, 'JSON không hợp lệ: ' + err.message);
+  }
+});
+
+})();
+</script>
+</body>
+</html>
