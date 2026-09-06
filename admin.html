@@ -86,6 +86,22 @@ table.data-table th,table.data-table td{text-align:left;padding:8px 10px;border-
 table.data-table th{color:var(--maroon-700);font-size:.75rem;text-transform:uppercase;letter-spacing:.03em;}
 
 .msg{padding:12px 14px;border-radius:10px;font-size:.85rem;margin-top:12px;display:none;white-space:pre-wrap;word-break:break-word;}
+
+/* ---- Rich text editor (nội dung tự do cho trang chi tiết dịch vụ) ---- */
+.rte-wrap{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff;margin-bottom:16px;}
+.rte-toolbar{display:flex;flex-wrap:wrap;gap:4px;padding:8px;background:var(--blush-100);border-bottom:1px solid var(--line);}
+.rte-toolbar select{padding:6px 8px;border-radius:6px;border:1px solid var(--line);font-size:.8rem;background:#fff;}
+.rte-btn{width:32px;height:32px;border:1px solid var(--line);background:#fff;border-radius:6px;font-size:.85rem;font-weight:700;display:flex;align-items:center;justify-content:center;color:var(--ink);}
+.rte-btn:hover{background:var(--blush-200);}
+.rte-color{width:32px;height:32px;padding:2px;border-radius:6px;border:1px solid var(--line);background:#fff;cursor:pointer;}
+.rte-editable{min-height:160px;max-height:420px;overflow-y:auto;padding:14px 16px;font-size:.92rem;line-height:1.65;}
+.rte-editable:focus{outline:none;}
+.rte-editable h1,.rte-editable h2,.rte-editable h3{color:var(--maroon-700);margin:.6em 0 .3em;}
+.rte-editable h1{font-size:1.3rem;}
+.rte-editable h2{font-size:1.15rem;}
+.rte-editable h3{font-size:1.05rem;}
+.rte-editable p{margin:0 0 .8em;}
+.rte-editable ul,.rte-editable ol{margin:0 0 .8em;padding-left:1.3em;}
 #zaloChatIdMsg{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.78rem;max-height:220px;overflow-y:auto;}
 .msg.show{display:block;}
 .msg.ok{background:#e6f4ea;color:var(--ok);}
@@ -595,6 +611,72 @@ function imageUploaderHTML(path, label, val){
       '<input type="text" class="img-url-input" placeholder="...hoặc dán URL ảnh" value="'+(val && val.indexOf('data:')!==0 ? esc(val):'')+'">'+
     '</div></div>';
 }
+
+/* ---- Rich text editor: 1 ô soạn nội dung tự do (heading/màu chữ/bullet) ---- */
+function richTextEditorHTML(path, initialHtml, label){
+  return '<div class="field">'+
+    (label ? '<label>'+label+'</label>' : '')+
+    '<div class="rte-wrap" data-rte-path="'+path+'">'+
+      '<div class="rte-toolbar">'+
+        '<select class="rte-block-select" title="Kiểu đoạn">'+
+          '<option value="p">Đoạn văn thường</option>'+
+          '<option value="h2">Tiêu đề lớn</option>'+
+          '<option value="h3">Tiêu đề nhỏ</option>'+
+        '</select>'+
+        '<button type="button" class="rte-btn" data-cmd="bold" title="In đậm"><b>B</b></button>'+
+        '<button type="button" class="rte-btn" data-cmd="italic" title="In nghiêng"><i>I</i></button>'+
+        '<input type="color" class="rte-color" title="Màu chữ" value="#2B1A20">'+
+        '<button type="button" class="rte-btn" data-cmd="insertUnorderedList" title="Danh sách chấm">•≡</button>'+
+        '<button type="button" class="rte-btn" data-cmd="insertOrderedList" title="Danh sách số">1.≡</button>'+
+        '<button type="button" class="rte-btn" data-cmd="removeFormat" title="Xoá định dạng">⌫</button>'+
+      '</div>'+
+      '<div class="rte-editable" contenteditable="true">'+(initialHtml||'')+'</div>'+
+    '</div></div>';
+}
+function wireRichTextEditors(root){
+  root.querySelectorAll('[data-rte-path]').forEach(function(wrap){
+    var path = wrap.dataset.rtePath;
+    var editable = wrap.querySelector('.rte-editable');
+    var toolbar = wrap.querySelector('.rte-toolbar');
+
+    // Giữ focus trong vùng soạn thảo khi bấm nút toolbar (không mất vùng bôi đen)
+    toolbar.addEventListener('mousedown', function(e){ e.preventDefault(); });
+
+    toolbar.querySelectorAll('[data-cmd]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        editable.focus();
+        document.execCommand(btn.dataset.cmd, false, null);
+        setPath(draft, path, editable.innerHTML);
+        markDirty();
+      });
+    });
+    var blockSelect = toolbar.querySelector('.rte-block-select');
+    blockSelect.addEventListener('mousedown', function(e){ e.stopPropagation(); });
+    blockSelect.addEventListener('change', function(){
+      editable.focus();
+      document.execCommand('formatBlock', false, '<'+blockSelect.value+'>');
+      setPath(draft, path, editable.innerHTML);
+      markDirty();
+    });
+    var colorInput = toolbar.querySelector('.rte-color');
+    colorInput.addEventListener('input', function(){
+      editable.focus();
+      document.execCommand('foreColor', false, colorInput.value);
+      setPath(draft, path, editable.innerHTML);
+      markDirty();
+    });
+    editable.addEventListener('input', function(){
+      setPath(draft, path, editable.innerHTML);
+      markDirty();
+    });
+    editable.addEventListener('paste', function(e){
+      // Dán dạng văn bản thuần để tránh dính định dạng lạ từ Word/trang khác
+      e.preventDefault();
+      var text = (e.clipboardData || window.clipboardData).getData('text/plain');
+      document.execCommand('insertText', false, text);
+    });
+  });
+}
 function wireImageUploaders(root){
   root.querySelectorAll('[data-img-path]').forEach(function(box){
     var path = box.dataset.imgPath;
@@ -670,15 +752,14 @@ function renderServicesAdmin(){
         '<button type="button" class="remove-btn" data-remove-svc="'+cat.key+':'+i+'">Xoá</button>'+
         '<div class="field"><label>Tên dịch vụ</label><input data-bind="'+base+'.n"></div>'+
         '<div class="field"><label>Mô tả ngắn (hiển thị ở thẻ dịch vụ)</label><textarea rows="2" data-bind="'+base+'.d"></textarea></div>'+
-        '<details><summary style="cursor:pointer;color:var(--maroon-600);font-weight:600;font-size:.88rem;margin-bottom:12px;">📄 Nội dung trang chi tiết (mô tả đầy đủ, quy trình, hồ sơ, ảnh trước-sau, video...)</summary>'+
-          '<div class="field"><label>Dịch vụ này là gì?</label><textarea rows="3" data-bind="'+base+'.whatIsIt"></textarea></div>'+
-          '<div class="field"><label>Quy trình thực hiện</label><textarea rows="4" data-bind="'+base+'.process"></textarea></div>'+
+        '<details><summary style="cursor:pointer;color:var(--maroon-600);font-weight:600;font-size:.88rem;margin-bottom:12px;">📄 Nội dung trang chi tiết (nội dung tự do, hồ sơ, ảnh trước-sau, video...)</summary>'+
+          '<label>Nội dung chi tiết (tự viết heading, đoạn văn, gạch đầu dòng, đổi màu chữ tuỳ ý)</label>'+
+          richTextEditorHTML(base+'.content', it.content, null)+
           '<div class="row row-2">'+
             '<div class="field"><label>Hồ sơ cần chuẩn bị</label><textarea rows="2" data-bind="'+base+'.prep"></textarea></div>'+
             '<div class="field"><label>Xét nghiệm cần chuẩn bị</label><textarea rows="2" data-bind="'+base+'.tests"></textarea></div>'+
           '</div>'+
           '<div class="field"><label>Thời gian dự kiến</label><input data-bind="'+base+'.duration" placeholder="Vd: 60–90 phút"></div>'+
-          '<div class="field"><label>Chăm sóc sau khi thực hiện (mau lành)</label><textarea rows="3" data-bind="'+base+'.aftercare"></textarea></div>'+
           '<div class="row row-2">'+
             imageUploaderHTML(base+'.beforeImage', 'Ảnh TRƯỚC', it.beforeImage)+
             imageUploaderHTML(base+'.afterImage', 'Ảnh SAU', it.afterImage)+
@@ -692,6 +773,7 @@ function renderServicesAdmin(){
   }).join('<hr style="border:none;border-top:1px solid var(--line);margin:18px 0;">');
   bindForm(wrap);
   wireImageUploaders(wrap);
+  wireRichTextEditors(wrap);
   wrap.querySelectorAll('.svc-yt-input').forEach(function(inp){
     inp.addEventListener('change', function(){
       var val = extractYoutubeId(inp.value);
@@ -711,7 +793,7 @@ function renderServicesAdmin(){
     btn.addEventListener('click', function(){
       var cat = btn.dataset.addSvc;
       draft.services[cat] = draft.services[cat] || [];
-      draft.services[cat].push({n:'Dịch vụ mới', d:'', whatIsIt:'', process:'', prep:'', tests:'', duration:'', aftercare:'', beforeImage:'', afterImage:'', videoId:''});
+      draft.services[cat].push({n:'Dịch vụ mới', d:'', content:'', prep:'', tests:'', duration:'', beforeImage:'', afterImage:'', videoId:''});
       markDirty(); renderServicesAdmin();
     });
   });
