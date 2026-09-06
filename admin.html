@@ -515,6 +515,20 @@ function renderAll(){
   renderBaAdmin();
   renderTestiAdmin();
   renderWorkingDayChips();
+  autoLoadScheduleFromSheet();
+}
+
+/* Tự tải giờ làm/thời lượng lịch hẹn thật từ Google Sheet khi mở trang (nếu
+   đã có Apps Script URL), để không cần bấm "Tải cấu hình hiện tại từ Sheet"
+   thủ công mỗi lần vào lại Admin Panel. Không cần secret vì đây chỉ đọc các
+   giá trị không nhạy cảm (getConfig không trả về email/token/khoá bí mật). */
+function autoLoadScheduleFromSheet(){
+  if(!apiUrl()) return;
+  apiGet({action:'getConfig'}).then(function(res){
+    if(!res.ok) return;
+    sheetSettings = Object.assign(sheetSettings, res.settings);
+    fillBookingSettingsForm();
+  }).catch(function(){ /* im lặng bỏ qua — không chặn việc mở trang */ });
 }
 
 /* =========================================================
@@ -943,6 +957,34 @@ function fillBookingSettingsForm(){
   renderWorkingDayChips();
 }
 fillBookingSettingsForm();
+
+/* Lưu tạm các trường nhạy cảm (khoá bí mật, email, Zalo token/chat id) vào
+   localStorage của trình duyệt này, để không phải gõ lại mỗi lần reload
+   trang. Các giá trị này KHÔNG được lưu vào content.json (không public). */
+var LOCAL_FIELDS_KEY = 'tmtt_admin_local_fields';
+var LOCAL_FIELD_IDS = ['secretKeyInput', 'cfgAdminEmails', 'cfgStaffEmails', 'cfgZaloToken', 'cfgZaloChatId'];
+function restoreLocalFields(){
+  try {
+    var saved = JSON.parse(localStorage.getItem(LOCAL_FIELDS_KEY) || '{}');
+    LOCAL_FIELD_IDS.forEach(function(id){
+      var el = document.getElementById(id);
+      if(el && saved[id] !== undefined) el.value = saved[id];
+    });
+  } catch(err){ /* localStorage lỗi hoặc dữ liệu hỏng — bỏ qua, không chặn trang */ }
+}
+function saveLocalFields(){
+  var out = {};
+  LOCAL_FIELD_IDS.forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) out[id] = el.value;
+  });
+  try { localStorage.setItem(LOCAL_FIELDS_KEY, JSON.stringify(out)); } catch(err){}
+}
+LOCAL_FIELD_IDS.forEach(function(id){
+  var el = document.getElementById(id);
+  if(el) el.addEventListener('input', saveLocalFields);
+});
+restoreLocalFields();
 
 document.getElementById('loadBookingSettingsBtn').addEventListener('click', function(){
   apiGet({action:'getConfig'}).then(function(res){
