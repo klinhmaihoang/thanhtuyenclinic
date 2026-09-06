@@ -219,6 +219,21 @@ textarea.json-editor{width:100%;min-height:420px;font-family:ui-monospace,Menlo,
           <button class="btn btn-ghost" id="syncBranchesBtn" type="button">Đồng bộ danh sách chi nhánh</button>
           <div class="msg" id="syncMsg"></div>
         </div>
+
+        <div class="card">
+          <h3>Kết nối CRM Bitrix24 <span class="pill">2 chiều</span></h3>
+          <p class="hint">Mỗi lịch hẹn mới sẽ tự tạo 1 Lead bên Bitrix. Đổi trạng thái ở Admin Panel (hoặc trực tiếp trên Sheet) sẽ tự đẩy sang Bitrix; ngược lại đổi trạng thái Lead bên Bitrix cũng tự đồng bộ về đây và vào Google Sheet. Xem hướng dẫn tạo Webhook trong README.md, mục "Kết nối Bitrix24".</p>
+          <div class="field"><label>Bitrix Webhook URL (Inbound)</label><input id="cfgBitrixUrl" placeholder="https://tenmien.bitrix24.vn/rest/1/xxxxxxxxxxxx/"></div>
+          <div class="field"><label>Bitrix Outbound Secret (tuỳ chọn)</label><input id="cfgBitrixSecret" placeholder="Application Token của Webhook đi, nếu có"></div>
+          <p class="hint" style="margin-bottom:8px;">Mã trạng thái Lead (STATUS_ID) trong Bitrix ứng với từng trạng thái lịch hẹn — sửa nếu funnel Bitrix của bạn đặt tên khác:</p>
+          <div class="row row-2">
+            <div class="field"><label>Chờ xác nhận</label><input id="cfgBitrixStatusNew" placeholder="NEW"></div>
+            <div class="field"><label>Đã xác nhận</label><input id="cfgBitrixStatusConfirmed" placeholder="IN_PROCESS"></div>
+            <div class="field"><label>Đã huỷ</label><input id="cfgBitrixStatusCancelled" placeholder="JUNK"></div>
+            <div class="field"><label>Hoàn thành / Đã chốt (Deal)</label><input id="cfgBitrixStatusDone" placeholder="CONVERTED"></div>
+          </div>
+          <div class="msg" id="bitrixMsg"></div>
+        </div>
       </section>
 
       <!-- ===================== NỘI DUNG TRANG ===================== -->
@@ -962,7 +977,8 @@ fillBookingSettingsForm();
    localStorage của trình duyệt này, để không phải gõ lại mỗi lần reload
    trang. Các giá trị này KHÔNG được lưu vào content.json (không public). */
 var LOCAL_FIELDS_KEY = 'tmtt_admin_local_fields';
-var LOCAL_FIELD_IDS = ['secretKeyInput', 'cfgAdminEmails', 'cfgStaffEmails', 'cfgZaloToken', 'cfgZaloChatId'];
+var LOCAL_FIELD_IDS = ['secretKeyInput', 'cfgAdminEmails', 'cfgStaffEmails', 'cfgZaloToken', 'cfgZaloChatId',
+  'cfgBitrixUrl', 'cfgBitrixSecret', 'cfgBitrixStatusNew', 'cfgBitrixStatusConfirmed', 'cfgBitrixStatusCancelled', 'cfgBitrixStatusDone'];
 function restoreLocalFields(){
   try {
     var saved = JSON.parse(localStorage.getItem(LOCAL_FIELDS_KEY) || '{}');
@@ -985,6 +1001,13 @@ LOCAL_FIELD_IDS.forEach(function(id){
   if(el) el.addEventListener('input', saveLocalFields);
 });
 restoreLocalFields();
+(function fillBitrixStatusDefaults(){
+  var defaults = { cfgBitrixStatusNew:'NEW', cfgBitrixStatusConfirmed:'IN_PROCESS', cfgBitrixStatusCancelled:'JUNK', cfgBitrixStatusDone:'CONVERTED' };
+  Object.keys(defaults).forEach(function(id){
+    var el = document.getElementById(id);
+    if(el && !el.value) el.value = defaults[id];
+  });
+})();
 
 document.getElementById('loadBookingSettingsBtn').addEventListener('click', function(){
   apiGet({action:'getConfig'}).then(function(res){
@@ -1030,7 +1053,13 @@ document.getElementById('saveBookingSettingsBtn').addEventListener('click', func
     'Email nhận thông báo (admin)': document.getElementById('cfgAdminEmails').value,
     'Email nhận thông báo (nhân viên)': document.getElementById('cfgStaffEmails').value,
     'Zalo Bot Token': document.getElementById('cfgZaloToken').value,
-    'Zalo Chat ID nhận thông báo': document.getElementById('cfgZaloChatId').value
+    'Zalo Chat ID nhận thông báo': document.getElementById('cfgZaloChatId').value,
+    'Bitrix Webhook URL (Inbound)': document.getElementById('cfgBitrixUrl').value,
+    'Bitrix Outbound Secret': document.getElementById('cfgBitrixSecret').value,
+    'Bitrix mã trạng thái: Chờ xác nhận': document.getElementById('cfgBitrixStatusNew').value,
+    'Bitrix mã trạng thái: Đã xác nhận': document.getElementById('cfgBitrixStatusConfirmed').value,
+    'Bitrix mã trạng thái: Đã huỷ': document.getElementById('cfgBitrixStatusCancelled').value,
+    'Bitrix mã trạng thái: Hoàn thành': document.getElementById('cfgBitrixStatusDone').value
   };
   apiPost({action:'updateSettings', secret:secret, settings:settings}).then(function(res){
     showMsg('bookingSettingsMsg', !!res.ok, res.ok ? 'Đã lưu cấu hình đặt lịch lên Google Sheet.' : 'Lỗi: '+res.error);
@@ -1067,6 +1096,7 @@ document.getElementById('syncBranchesBtn').addEventListener('click', function(){
 /* =========================================================
    LỊCH HẸN
    ========================================================= */
+var BOOKING_STATUSES = ['Chờ xác nhận', 'Đã xác nhận', 'Đã huỷ', 'Hoàn thành'];
 document.getElementById('loadBookingsBtn').addEventListener('click', function(){
   var secret = document.getElementById('secretKeyInput').value.trim();
   if(!secret){ showMsg('bookingsMsg', false, 'Vui lòng nhập Khoá bí mật ở tab "Giờ làm & đặt lịch" trước.'); return; }
@@ -1075,10 +1105,28 @@ document.getElementById('loadBookingsBtn').addEventListener('click', function(){
   apiPost({action:'listBookings', secret:secret, fromDate:fromDate}).then(function(res){
     if(!res.ok){ showMsg('bookingsMsg', false, 'Lỗi: '+res.error); return; }
     showMsg('bookingsMsg', true, 'Tải thành công '+res.bookings.length+' lịch hẹn.');
-    var rows = res.bookings.map(function(b){
-      return '<tr><td>'+b['Ngày hẹn']+' '+b['Giờ hẹn']+'</td><td>'+b['Họ và tên']+'</td><td>'+b['Số điện thoại']+'</td><td>'+b['Tên chi nhánh']+'</td><td>'+b['Tên bác sĩ']+'</td><td>'+b['Dịch vụ']+'</td><td>'+b['Trạng thái']+'</td></tr>';
+    var rows = res.bookings.map(function(b, i){
+      var options = BOOKING_STATUSES.map(function(s){ return '<option value="'+s+'"'+(s===b['Trạng thái']?' selected':'')+'>'+s+'</option>'; }).join('');
+      var leadBadge = b['Mã Lead Bitrix'] ? '<span class="pill" title="Mã Lead Bitrix">Lead #'+b['Mã Lead Bitrix']+'</span>' : '';
+      return '<tr>'+
+        '<td>'+b['Ngày hẹn']+' '+b['Giờ hẹn']+'</td><td>'+b['Họ và tên']+'</td><td>'+b['Số điện thoại']+'</td>'+
+        '<td>'+b['Tên chi nhánh']+'</td><td>'+b['Tên bác sĩ']+'</td><td>'+b['Dịch vụ']+'</td>'+
+        '<td><select data-booking-id="'+b['Mã lịch hẹn']+'" class="booking-status-select" style="padding:6px 8px;font-size:.8rem;">'+options+'</select> '+leadBadge+'</td>'+
+        '</tr>';
     }).join('');
     document.getElementById('bookingsTable').innerHTML = '<tr><th>Ngày giờ</th><th>Khách hàng</th><th>SĐT</th><th>Chi nhánh</th><th>Bác sĩ</th><th>Dịch vụ</th><th>Trạng thái</th></tr>' + rows;
+    document.querySelectorAll('.booking-status-select').forEach(function(sel){
+      sel.addEventListener('change', function(){
+        var bookingId = sel.dataset.bookingId;
+        var newStatus = sel.value;
+        sel.disabled = true;
+        apiPost({action:'updateBookingStatus', secret:secret, bookingId:bookingId, status:newStatus}).then(function(res2){
+          sel.disabled = false;
+          if(!res2.ok){ showMsg('bookingsMsg', false, 'Lỗi cập nhật: '+res2.error); return; }
+          showMsg('bookingsMsg', true, 'Đã cập nhật trạng thái lịch hẹn '+bookingId+' → "'+newStatus+'" (đồng bộ cả Bitrix nếu có Mã Lead).');
+        }).catch(function(err){ sel.disabled = false; showMsg('bookingsMsg', false, 'Không kết nối được: '+err.message); });
+      });
+    });
   }).catch(function(err){ showMsg('bookingsMsg', false, 'Không kết nối được: '+err.message); });
 });
 
