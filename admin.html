@@ -83,7 +83,8 @@ table.data-table{width:100%;border-collapse:collapse;font-size:.85rem;}
 table.data-table th,table.data-table td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);}
 table.data-table th{color:var(--maroon-700);font-size:.75rem;text-transform:uppercase;letter-spacing:.03em;}
 
-.msg{padding:12px 14px;border-radius:10px;font-size:.85rem;margin-top:12px;display:none;}
+.msg{padding:12px 14px;border-radius:10px;font-size:.85rem;margin-top:12px;display:none;white-space:pre-wrap;word-break:break-word;}
+#zaloChatIdMsg{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.78rem;max-height:220px;overflow-y:auto;}
 .msg.show{display:block;}
 .msg.ok{background:#e6f4ea;color:var(--ok);}
 .msg.err{background:#fbe9ea;color:var(--err);}
@@ -176,9 +177,9 @@ textarea.json-editor{width:100%;min-height:420px;font-family:ui-monospace,Menlo,
 
         <div class="card">
           <h3>Cấu hình đặt lịch thực tế (đồng bộ vào Google Sheet) <span class="pill">real-time</span></h3>
-          <p class="hint">Đây là cấu hình thật để hệ thống tính giờ trống — sẽ ghi thẳng vào tab "Settings" trong Google Sheet qua Apps Script. Cần đã điền Apps Script URL ở tab "Tổng quan" và đúng Khoá bí mật (đặt trong tab Settings, cột ADMIN_SECRET_KEY của Sheet).</p>
+          <p class="hint">Đây là cấu hình thật để hệ thống tính giờ trống — sẽ ghi thẳng vào tab "Cài đặt" trong Google Sheet qua Apps Script. Cần đã điền Apps Script URL ở tab "Tổng quan" và đúng giá trị dòng "Khoá bí mật quản trị" trong tab Cài đặt của Sheet.</p>
 
-          <div class="field"><label>Khoá bí mật (ADMIN_SECRET_KEY)</label><input type="password" id="secretKeyInput" placeholder="Dán đúng khoá đã đặt trong Google Sheet"></div>
+          <div class="field"><label>Khoá bí mật quản trị</label><input type="password" id="secretKeyInput" placeholder="Dán đúng giá trị dòng 'Khoá bí mật quản trị' trong tab Cài đặt của Google Sheet"></div>
 
           <div class="field">
             <label>Ngày làm việc trong tuần</label>
@@ -957,9 +958,16 @@ document.getElementById('fetchZaloChatIdBtn').addEventListener('click', function
   if(!secret){ showMsg('zaloChatIdMsg', false, 'Vui lòng nhập Khoá bí mật ở trên trước.'); return; }
   apiGet({action:'getLastZaloUpdate', secret:secret}).then(function(res){
     if(!res.ok){ showMsg('zaloChatIdMsg', false, 'Lỗi: '+res.error); return; }
-    if(!res.chatId){ showMsg('zaloChatIdMsg', false, 'Chưa nhận được tin nhắn nào — hãy chắc chắn đã cắm webhook trỏ về đúng URL Apps Script này, rồi nhắn thử 1 tin cho bot.'); return; }
-    document.getElementById('cfgZaloChatId').value = res.chatId;
-    showMsg('zaloChatIdMsg', true, 'Đã lấy Chat ID: ' + res.chatId + (res.from ? ' (từ "'+res.from+'")' : '') + '. Nhớ bấm "Lưu cấu hình lên Google Sheet" để hoàn tất.');
+    if(res.chatId){
+      document.getElementById('cfgZaloChatId').value = res.chatId;
+      showMsg('zaloChatIdMsg', true, 'Đã lấy Chat ID: ' + res.chatId + (res.from ? ' (từ "'+res.from+'")' : '') + '. Nhớ bấm "Lưu cấu hình lên Google Sheet" để hoàn tất.');
+      return;
+    }
+    if(res.raw){
+      showMsg('zaloChatIdMsg', false, 'Nhận được dữ liệu từ Zalo nhưng chưa tự tách được Chat ID. Copy đoạn dữ liệu gốc dưới đây gửi lại để được hỗ trợ chỉnh:\n\n' + res.raw);
+      return;
+    }
+    showMsg('zaloChatIdMsg', false, 'Chưa nhận được tin nhắn nào. Kiểm tra lại: (1) Webhook URL trong app Zalo Bot đã đúng và đã bấm Lưu, (2) Apps Script đã Deploy bản mới nhất (Manage deployments > New version), (3) đã nhắn thử tin cho bot sau khi lưu webhook.');
   }).catch(function(err){ showMsg('zaloChatIdMsg', false, 'Không kết nối được: '+err.message); });
 });
 
