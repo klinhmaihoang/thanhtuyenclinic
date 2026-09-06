@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin — Thẩm Mỹ Thanh Tuyền</title>
 <meta name="robots" content="noindex, nofollow">
+<link rel="icon" id="faviconLink" href="">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -606,6 +607,7 @@ function wireImageUploaders(root){
         preview.style.backgroundImage = 'url("'+dataUrl+'")';
         preview.textContent = '';
         markDirty();
+        if(path === 'site.favicon') applyFaviconToTab();
       });
     });
     box.querySelector('.img-url-input').addEventListener('input', function(e){
@@ -613,6 +615,7 @@ function wireImageUploaders(root){
       setPath(draft, path, url);
       if(url){ preview.style.backgroundImage = 'url("'+url+'")'; preview.textContent=''; }
       markDirty();
+      if(path === 'site.favicon') applyFaviconToTab();
     });
   });
 }
@@ -645,6 +648,11 @@ function renderFavicon(){
   var wrap = document.getElementById('faviconWrap');
   wrap.innerHTML = imageUploaderHTML('site.favicon', 'Favicon', draft.site.favicon);
   wireImageUploaders(wrap);
+  applyFaviconToTab();
+}
+function applyFaviconToTab(){
+  var link = document.getElementById('faviconLink');
+  if(link && draft.site && draft.site.favicon) link.href = draft.site.favicon;
 }
 
 /* =========================================================
