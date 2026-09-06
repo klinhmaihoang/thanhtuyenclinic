@@ -121,6 +121,9 @@ textarea.json-editor{width:100%;min-height:420px;font-family:ui-monospace,Menlo,
       <button data-tab="hinh-anh">Hình ảnh</button>
       <button data-tab="video">Video Youtube</button>
       <button data-tab="doi-ngu">Đội ngũ &amp; chi nhánh</button>
+      <button data-tab="dich-vu-ct">Dịch vụ chi tiết</button>
+      <button data-tab="blog">Blog &amp; Tin tức</button>
+      <button data-tab="khac">Hỏi đáp, Trước-Sau, Đánh giá</button>
       <button data-tab="lich-hen">Lịch hẹn</button>
       <button data-tab="luu-github">Lưu &amp; GitHub</button>
       <button data-tab="nang-cao">Nâng cao (JSON)</button>
@@ -195,7 +198,11 @@ textarea.json-editor{width:100%;min-height:420px;font-family:ui-monospace,Menlo,
 
           <div class="field"><label>Email admin nhận thông báo (cách nhau bằng dấu phẩy)</label><input id="cfgAdminEmails" placeholder="admin@..., nhanvien@..."></div>
           <div class="field"><label>Email nhân viên (tuỳ chọn)</label><input id="cfgStaffEmails"></div>
-          <div class="field"><label>Zalo Webhook URL (tuỳ chọn — xem README)</label><input id="cfgZaloWebhook" placeholder="Điền sau khi có link Zalo/Make/Zapier của khách"></div>
+          <div class="row row-2">
+            <div class="field"><label>Zalo Bot Token</label><input id="cfgZaloToken" placeholder="123456:abc-xyz (lấy từ bot.zaloplatforms.com)"></div>
+            <div class="field"><label>Zalo Chat ID nhận thông báo</label><input id="cfgZaloChatId" placeholder="ID cuộc trò chuyện của bot"></div>
+          </div>
+          <p class="hint" style="margin-top:-8px;">Bạn đã có Zalo Bot — vào <a href="https://bot.zaloplatforms.com" target="_blank" rel="noopener">bot.zaloplatforms.com</a> lấy Bot Token, nhắn thử 1 tin cho bot để lấy Chat ID, rồi điền cả 2 vào đây.</p>
 
           <button class="btn btn-primary" id="saveBookingSettingsBtn" type="button">Lưu cấu hình lên Google Sheet</button>
           <button class="btn btn-ghost" id="loadBookingSettingsBtn" type="button">Tải cấu hình hiện tại từ Sheet</button>
@@ -218,6 +225,11 @@ textarea.json-editor{width:100%;min-height:420px;font-family:ui-monospace,Menlo,
 
       <!-- ===================== HÌNH ẢNH ===================== -->
       <section class="panel" data-panel="hinh-anh">
+        <div class="card">
+          <h3>Favicon (biểu tượng nhỏ trên tab trình duyệt)</h3>
+          <p class="hint">Nên dùng ảnh vuông, tối thiểu 64×64px (logo hiện có là lựa chọn tốt).</p>
+          <div id="faviconWrap"></div>
+        </div>
         <div class="card">
           <h3>Ảnh chính website</h3>
           <p class="hint">Ảnh được lưu trực tiếp trong content.json (định dạng base64) để không cần thao tác upload file riêng — đơn giản và luôn đồng bộ. Với nhiều ảnh chất lượng cao, file content.json sẽ nặng hơn, cân nhắc dùng link ảnh ngoài (dán URL) nếu cần tối ưu tốc độ tải.</p>
@@ -246,6 +258,44 @@ textarea.json-editor{width:100%;min-height:420px;font-family:ui-monospace,Menlo,
           <h3>Đội ngũ bác sĩ &amp; nhân viên</h3>
           <div id="teamWrap"></div>
           <button class="btn btn-ghost" id="addTeamBtn" type="button">+ Thêm thành viên</button>
+        </div>
+      </section>
+
+      <!-- ===================== DỊCH VỤ CHI TIẾT ===================== -->
+      <section class="panel" data-panel="dich-vu-ct">
+        <div class="card">
+          <h3>Danh mục &amp; dịch vụ</h3>
+          <p class="hint">Chỉnh tên, mô tả từng dịch vụ theo 4 nhóm hiển thị trên trang Dịch vụ.</p>
+          <div id="servicesWrap"></div>
+        </div>
+      </section>
+
+      <!-- ===================== BLOG & TIN TỨC ===================== -->
+      <section class="panel" data-panel="blog">
+        <div class="card">
+          <h3>Bài viết Blog / Tin tức</h3>
+          <p class="hint">Khách bấm vào 1 bài sẽ thấy nội dung đầy đủ trong khung xem chi tiết ngay trên trang.</p>
+          <div id="blogWrap"></div>
+          <button class="btn btn-ghost" id="addBlogBtn" type="button">+ Thêm bài viết</button>
+        </div>
+      </section>
+
+      <!-- ===================== KHÁC: FAQ, TRƯỚC-SAU, ĐÁNH GIÁ ===================== -->
+      <section class="panel" data-panel="khac">
+        <div class="card">
+          <h3>Câu hỏi thường gặp (FAQ)</h3>
+          <div id="faqWrap"></div>
+          <button class="btn btn-ghost" id="addFaqBtn" type="button">+ Thêm câu hỏi</button>
+        </div>
+        <div class="card">
+          <h3>Ảnh Trước &amp; Sau</h3>
+          <div id="baWrap"></div>
+          <button class="btn btn-ghost" id="addBaBtn" type="button">+ Thêm case</button>
+        </div>
+        <div class="card">
+          <h3>Đánh giá khách hàng</h3>
+          <div id="testiWrap"></div>
+          <button class="btn btn-ghost" id="addTestiBtn" type="button">+ Thêm đánh giá</button>
         </div>
       </section>
 
@@ -345,7 +395,7 @@ function doLogin(){
    ========================================================= */
 var DEFAULT_CONTENT = {
   site:{ name:"Thẩm Mỹ Thanh Tuyền", hotline:"1900 0306", phone:"0909415066", email:"service@thammythanhtuyen.vn",
-    facebook:"", messenger:"", zalo:"", youtubeChannel:"", instagram:"", tiktok:"", appsScriptUrl:"" },
+    facebook:"", messenger:"", zalo:"", youtubeChannel:"", instagram:"", tiktok:"", appsScriptUrl:"", favicon:"" },
   github:{ owner:"", repo:"", branch:"main", contentPath:"content.json", imagesPath:"assets/images" },
   hours:{ workingDays:[1,2,3,4,5,6], workingDaysLabel:"Thứ 2 – Thứ 7", openTime:"08:00", closeTime:"20:00", closedLabel:"Chủ nhật nghỉ" },
   pageIntros:{
@@ -353,7 +403,8 @@ var DEFAULT_CONTENT = {
     team:{kicker:"",title:"",lede:""}, beforeafter:{kicker:"",title:"",lede:""}, blog:{kicker:"",title:"",lede:""}, contact:{kicker:"",title:"",lede:""}
   },
   images:{ heroVisual:"", aboutDoctor:"", aboutDoctorFull:"" },
-  videos:[], branches:[], team:[], services:{mui:[],mat:[],"mat-khuon":[]}
+  videos:[], branches:[], team:[], services:{mui:[],mat:[],"mat-khuon":[],"voc-dang":[]},
+  blogPosts:[], faqs:[], beforeAfterCases:[], testimonials:[]
 };
 var draft = JSON.parse(JSON.stringify(DEFAULT_CONTENT));
 var dirty = false;
@@ -450,10 +501,16 @@ function deepMerge(base, override){
 function renderAll(){
   bindForm(document);
   renderPageIntros();
+  renderFavicon();
   renderMainImages();
   renderVideos();
   renderBranches();
   renderTeam();
+  renderServicesAdmin();
+  renderBlogAdmin();
+  renderFaqAdmin();
+  renderBaAdmin();
+  renderTestiAdmin();
   renderWorkingDayChips();
 }
 
@@ -482,6 +539,7 @@ function renderPageIntros(){
    HÌNH ẢNH CHÍNH
    ========================================================= */
 var MAIN_IMAGE_FIELDS = [
+  {key:'favicon', label:'Favicon (icon nhỏ hiện trên tab trình duyệt — nên dùng ảnh vuông)'},
   {key:'heroVisual', label:'Ảnh nền khối hero (trang chủ)'},
   {key:'aboutDoctor', label:'Ảnh chân dung bác sĩ (trang chủ + preview nhỏ)'},
   {key:'aboutDoctorFull', label:'Ảnh bác sĩ khổ lớn (trang Giới thiệu)'}
@@ -546,6 +604,158 @@ function resizeImageToDataURL(file, maxDim, quality){
     reader.readAsDataURL(file);
   });
 }
+
+/* =========================================================
+   FAVICON
+   ========================================================= */
+function renderFavicon(){
+  var wrap = document.getElementById('faviconWrap');
+  wrap.innerHTML = imageUploaderHTML('site.favicon', 'Favicon', draft.site.favicon);
+  wireImageUploaders(wrap);
+}
+
+/* =========================================================
+   DỊCH VỤ CHI TIẾT
+   ========================================================= */
+var SERVICE_CATS = [{key:'mui',label:'Thẩm mỹ mũi'},{key:'mat',label:'Thẩm mỹ mắt'},{key:'mat-khuon',label:'Khuôn mặt'},{key:'voc-dang',label:'Vóc dáng'}];
+function renderServicesAdmin(){
+  var wrap = document.getElementById('servicesWrap');
+  draft.services = draft.services || {};
+  wrap.innerHTML = SERVICE_CATS.map(function(cat){
+    var items = draft.services[cat.key] || [];
+    var rows = items.map(function(it, i){
+      return '<div class="list-item">'+
+        '<button type="button" class="remove-btn" data-remove-svc="'+cat.key+':'+i+'">Xoá</button>'+
+        '<div class="field"><label>Tên dịch vụ</label><input data-bind="services.'+cat.key+'['+i+'].n"></div>'+
+        '<div class="field"><label>Mô tả ngắn</label><textarea rows="2" data-bind="services.'+cat.key+'['+i+'].d"></textarea></div>'+
+        '</div>';
+    }).join('') || '<p class="hint">Chưa có dịch vụ nào trong nhóm này.</p>';
+    return '<h3 style="font-size:1rem;margin-top:22px;">'+cat.label+'</h3>' + rows +
+      '<button type="button" class="btn btn-ghost" data-add-svc="'+cat.key+'" style="margin-bottom:10px;">+ Thêm dịch vụ vào "'+cat.label+'"</button>';
+  }).join('<hr style="border:none;border-top:1px solid var(--line);margin:18px 0;">');
+  bindForm(wrap);
+  wrap.querySelectorAll('[data-remove-svc]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var parts = btn.dataset.removeSvc.split(':');
+      draft.services[parts[0]].splice(Number(parts[1]),1);
+      markDirty(); renderServicesAdmin();
+    });
+  });
+  wrap.querySelectorAll('[data-add-svc]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var cat = btn.dataset.addSvc;
+      draft.services[cat] = draft.services[cat] || [];
+      draft.services[cat].push({n:'Dịch vụ mới', d:''});
+      markDirty(); renderServicesAdmin();
+    });
+  });
+}
+
+/* =========================================================
+   BLOG / TIN TỨC
+   ========================================================= */
+function renderBlogAdmin(){
+  var wrap = document.getElementById('blogWrap');
+  wrap.innerHTML = (draft.blogPosts||[]).map(function(p, i){
+    return '<div class="list-item">'+
+      '<button type="button" class="remove-btn" data-remove-blog="'+i+'">Xoá</button>'+
+      '<div class="row row-2">'+
+        '<div class="field"><label>Tiêu đề</label><input data-bind="blogPosts['+i+'].title"></div>'+
+        '<div class="field"><label>Nhãn / chuyên mục (hiển thị nhỏ phía trên tiêu đề)</label><input data-bind="blogPosts['+i+'].tag"></div>'+
+      '</div>'+
+      '<div class="field"><label>Tóm tắt ngắn (hiển thị ở thẻ bài viết)</label><textarea rows="2" data-bind="blogPosts['+i+'].excerpt"></textarea></div>'+
+      '<div class="field"><label>Nội dung đầy đủ (hiển thị khi khách bấm vào bài)</label><textarea rows="6" data-bind="blogPosts['+i+'].content"></textarea></div>'+
+      imageUploaderHTML('blogPosts['+i+'].image', 'Ảnh bài viết', p.image)+
+      '</div>';
+  }).join('') || '<p class="hint">Chưa có bài viết nào.</p>';
+  bindForm(wrap);
+  wireImageUploaders(wrap);
+  wrap.querySelectorAll('[data-remove-blog]').forEach(function(btn){
+    btn.addEventListener('click', function(){ draft.blogPosts.splice(Number(btn.dataset.removeBlog),1); markDirty(); renderBlogAdmin(); });
+  });
+}
+document.getElementById('addBlogBtn').addEventListener('click', function(){
+  draft.blogPosts = draft.blogPosts || [];
+  draft.blogPosts.push({title:'Bài viết mới', tag:'Kiến thức chuyên môn', excerpt:'', content:'', image:''});
+  markDirty(); renderBlogAdmin();
+});
+
+/* =========================================================
+   FAQ
+   ========================================================= */
+function renderFaqAdmin(){
+  var wrap = document.getElementById('faqWrap');
+  wrap.innerHTML = (draft.faqs||[]).map(function(f, i){
+    return '<div class="list-item">'+
+      '<button type="button" class="remove-btn" data-remove-faq="'+i+'">Xoá</button>'+
+      '<div class="field"><label>Câu hỏi</label><input data-bind="faqs['+i+'].q"></div>'+
+      '<div class="field"><label>Câu trả lời</label><textarea rows="3" data-bind="faqs['+i+'].a"></textarea></div>'+
+      '</div>';
+  }).join('') || '<p class="hint">Chưa có câu hỏi nào.</p>';
+  bindForm(wrap);
+  wrap.querySelectorAll('[data-remove-faq]').forEach(function(btn){
+    btn.addEventListener('click', function(){ draft.faqs.splice(Number(btn.dataset.removeFaq),1); markDirty(); renderFaqAdmin(); });
+  });
+}
+document.getElementById('addFaqBtn').addEventListener('click', function(){
+  draft.faqs = draft.faqs || [];
+  draft.faqs.push({q:'Câu hỏi mới', a:''});
+  markDirty(); renderFaqAdmin();
+});
+
+/* =========================================================
+   TRƯỚC & SAU
+   ========================================================= */
+function renderBaAdmin(){
+  var wrap = document.getElementById('baWrap');
+  wrap.innerHTML = (draft.beforeAfterCases||[]).map(function(c, i){
+    return '<div class="list-item">'+
+      '<button type="button" class="remove-btn" data-remove-ba="'+i+'">Xoá</button>'+
+      '<div class="row row-2">'+
+        '<div class="field"><label>Tên dịch vụ / case</label><input data-bind="beforeAfterCases['+i+'].t"></div>'+
+        '<div class="field"><label>Thời gian (vd: Sau 3 tháng)</label><input data-bind="beforeAfterCases['+i+'].s"></div>'+
+      '</div>'+
+      '<div class="row row-2">'+
+        imageUploaderHTML('beforeAfterCases['+i+'].beforeImage', 'Ảnh TRƯỚC', c.beforeImage)+
+        imageUploaderHTML('beforeAfterCases['+i+'].afterImage', 'Ảnh SAU', c.afterImage)+
+      '</div></div>';
+  }).join('') || '<p class="hint">Chưa có case nào.</p>';
+  bindForm(wrap);
+  wireImageUploaders(wrap);
+  wrap.querySelectorAll('[data-remove-ba]').forEach(function(btn){
+    btn.addEventListener('click', function(){ draft.beforeAfterCases.splice(Number(btn.dataset.removeBa),1); markDirty(); renderBaAdmin(); });
+  });
+}
+document.getElementById('addBaBtn').addEventListener('click', function(){
+  draft.beforeAfterCases = draft.beforeAfterCases || [];
+  draft.beforeAfterCases.push({t:'Dịch vụ mới', s:'', beforeImage:'', afterImage:''});
+  markDirty(); renderBaAdmin();
+});
+
+/* =========================================================
+   ĐÁNH GIÁ KHÁCH HÀNG
+   ========================================================= */
+function renderTestiAdmin(){
+  var wrap = document.getElementById('testiWrap');
+  wrap.innerHTML = (draft.testimonials||[]).map(function(t, i){
+    return '<div class="list-item">'+
+      '<button type="button" class="remove-btn" data-remove-testi="'+i+'">Xoá</button>'+
+      '<div class="field"><label>Nội dung đánh giá</label><textarea rows="2" data-bind="testimonials['+i+'].quote"></textarea></div>'+
+      '<div class="row row-2">'+
+        '<div class="field"><label>Tên khách hàng</label><input data-bind="testimonials['+i+'].name"></div>'+
+        '<div class="field"><label>Chú thích (vd: Khách hàng — Nâng mũi)</label><input data-bind="testimonials['+i+'].role"></div>'+
+      '</div></div>';
+  }).join('') || '<p class="hint">Chưa có đánh giá nào.</p>';
+  bindForm(wrap);
+  wrap.querySelectorAll('[data-remove-testi]').forEach(function(btn){
+    btn.addEventListener('click', function(){ draft.testimonials.splice(Number(btn.dataset.removeTesti),1); markDirty(); renderTestiAdmin(); });
+  });
+}
+document.getElementById('addTestiBtn').addEventListener('click', function(){
+  draft.testimonials = draft.testimonials || [];
+  draft.testimonials.push({quote:'', name:'Khách hàng mới', role:'Khách hàng'});
+  markDirty(); renderTestiAdmin();
+});
 
 /* =========================================================
    VIDEOS
@@ -742,18 +952,19 @@ document.getElementById('loadBookingSettingsBtn').addEventListener('click', func
 
 document.getElementById('saveBookingSettingsBtn').addEventListener('click', function(){
   var secret = document.getElementById('secretKeyInput').value.trim();
-  if(!secret){ showMsg('bookingSettingsMsg', false, 'Vui lòng nhập Khoá bí mật (ADMIN_SECRET_KEY).'); return; }
+  if(!secret){ showMsg('bookingSettingsMsg', false, 'Vui lòng nhập Khoá bí mật (đúng như trong tab "Cài đặt" của Google Sheet).'); return; }
   var settings = {
-    OPEN_TIME: document.getElementById('cfgOpenTime').value,
-    CLOSE_TIME: document.getElementById('cfgCloseTime').value,
-    WORKING_DAYS: sheetSettings.workingDays.slice().sort().join(','),
-    SLOT_DURATION_MINUTES: document.getElementById('cfgDuration').value,
-    BUFFER_MINUTES: document.getElementById('cfgBuffer').value,
-    BOOKING_LEAD_HOURS: document.getElementById('cfgLead').value,
-    BOOKING_MAX_DAYS_AHEAD: document.getElementById('cfgMaxDays').value,
-    ADMIN_EMAILS: document.getElementById('cfgAdminEmails').value,
-    STAFF_EMAILS: document.getElementById('cfgStaffEmails').value,
-    ZALO_WEBHOOK_URL: document.getElementById('cfgZaloWebhook').value
+    'Giờ mở cửa': document.getElementById('cfgOpenTime').value,
+    'Giờ đóng cửa': document.getElementById('cfgCloseTime').value,
+    'Các ngày làm việc trong tuần': sheetSettings.workingDays.slice().sort().join(','),
+    'Thời lượng 1 lịch hẹn (phút)': document.getElementById('cfgDuration').value,
+    'Thời gian nghỉ giữa các lịch (phút)': document.getElementById('cfgBuffer').value,
+    'Khoá lịch hẹn trước (giờ)': document.getElementById('cfgLead').value,
+    'Số ngày cho đặt lịch trước': document.getElementById('cfgMaxDays').value,
+    'Email nhận thông báo (admin)': document.getElementById('cfgAdminEmails').value,
+    'Email nhận thông báo (nhân viên)': document.getElementById('cfgStaffEmails').value,
+    'Zalo Bot Token': document.getElementById('cfgZaloToken').value,
+    'Zalo Chat ID nhận thông báo': document.getElementById('cfgZaloChatId').value
   };
   apiPost({action:'updateSettings', secret:secret, settings:settings}).then(function(res){
     showMsg('bookingSettingsMsg', !!res.ok, res.ok ? 'Đã lưu cấu hình đặt lịch lên Google Sheet.' : 'Lỗi: '+res.error);
@@ -764,7 +975,13 @@ document.getElementById('syncDoctorsBtn').addEventListener('click', function(){
   var secret = document.getElementById('secretKeyInput').value.trim();
   if(!secret){ showMsg('syncMsg', false, 'Vui lòng nhập Khoá bí mật ở trên trước.'); return; }
   var items = (draft.team||[]).map(function(m){
-    return { DoctorID:m.id||slugify(m.name), Ten:m.name, ChiNhanhIDs:(m.branches||[]).join(','), VaiTro:m.role||'', HoatDong:true };
+    return {
+      'Mã bác sĩ': m.id||slugify(m.name),
+      'Họ và tên': m.name,
+      'Mã chi nhánh (cách nhau bằng dấu phẩy)': (m.branches||[]).join(','),
+      'Vai trò / Chuyên môn': m.role||'',
+      'Đang hoạt động': true
+    };
   });
   apiPost({action:'syncDoctors', secret:secret, items:items}).then(function(res){
     showMsg('syncMsg', !!res.ok, res.ok ? 'Đã đồng bộ '+res.count+' bác sĩ lên Google Sheet.' : 'Lỗi: '+res.error);
@@ -774,7 +991,7 @@ document.getElementById('syncBranchesBtn').addEventListener('click', function(){
   var secret = document.getElementById('secretKeyInput').value.trim();
   if(!secret){ showMsg('syncMsg', false, 'Vui lòng nhập Khoá bí mật ở trên trước.'); return; }
   var items = (draft.branches||[]).map(function(b){
-    return { BranchID:b.id||slugify(b.name), Ten:b.name, DiaChi:b.address||'', HoatDong:true };
+    return { 'Mã chi nhánh': b.id||slugify(b.name), 'Tên chi nhánh': b.name, 'Địa chỉ': b.address||'', 'Đang hoạt động': true };
   });
   apiPost({action:'syncBranches', secret:secret, items:items}).then(function(res){
     showMsg('syncMsg', !!res.ok, res.ok ? 'Đã đồng bộ '+res.count+' chi nhánh lên Google Sheet.' : 'Lỗi: '+res.error);
@@ -793,7 +1010,7 @@ document.getElementById('loadBookingsBtn').addEventListener('click', function(){
     if(!res.ok){ showMsg('bookingsMsg', false, 'Lỗi: '+res.error); return; }
     showMsg('bookingsMsg', true, 'Tải thành công '+res.bookings.length+' lịch hẹn.');
     var rows = res.bookings.map(function(b){
-      return '<tr><td>'+b.Ngay+' '+b.Gio+'</td><td>'+b.HoTen+'</td><td>'+b.SDT+'</td><td>'+b.ChiNhanh+'</td><td>'+b.BacSi+'</td><td>'+b.DichVu+'</td><td>'+b.TrangThai+'</td></tr>';
+      return '<tr><td>'+b['Ngày hẹn']+' '+b['Giờ hẹn']+'</td><td>'+b['Họ và tên']+'</td><td>'+b['Số điện thoại']+'</td><td>'+b['Tên chi nhánh']+'</td><td>'+b['Tên bác sĩ']+'</td><td>'+b['Dịch vụ']+'</td><td>'+b['Trạng thái']+'</td></tr>';
     }).join('');
     document.getElementById('bookingsTable').innerHTML = '<tr><th>Ngày giờ</th><th>Khách hàng</th><th>SĐT</th><th>Chi nhánh</th><th>Bác sĩ</th><th>Dịch vụ</th><th>Trạng thái</th></tr>' + rows;
   }).catch(function(err){ showMsg('bookingsMsg', false, 'Không kết nối được: '+err.message); });
