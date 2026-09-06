@@ -1068,6 +1068,10 @@ h2.h-lg{font-size:clamp(2.1rem,3.6vw,3rem);}
         <input type="tel" id="bkPhoneSimple" required placeholder="09xx xxx xxx">
       </div>
       <div class="form-field">
+        <label for="bkBranchSimple">Chi nhánh mong muốn</label>
+        <select id="bkBranchSimple"></select>
+      </div>
+      <div class="form-field">
         <label for="bkServiceSimple">Dịch vụ quan tâm</label>
         <select id="bkServiceSimple">
           <option>Nâng mũi</option>
@@ -1554,11 +1558,18 @@ function apiPost(data){
   }).then(function(r){ return r.json(); });
 }
 
+function populateSimpleBranches(){
+  var sel = document.getElementById('bkBranchSimple');
+  if(!sel || sel.dataset.filled) return;
+  var branches = CONTENT.branches || [];
+  sel.innerHTML = branches.map(function(b){ return '<option value="'+b.id+'">'+b.name+'</option>'; }).join('') || '<option value="">Liên hệ để chọn chi nhánh</option>';
+  sel.dataset.filled = '1';
+}
 function initBookingUI(){
   var hasApi = !!apiUrl();
   document.getElementById('bookingForm').style.display = hasApi ? 'block' : 'none';
   document.getElementById('bookingFormSimple').style.display = hasApi ? 'none' : 'block';
-  if(!hasApi) return;
+  if(!hasApi){ populateSimpleBranches(); return; }
   if(bookingInitDone){ return; }
   bookingInitDone = true;
 
