@@ -203,8 +203,8 @@ textarea.json-editor{width:100%;min-height:420px;font-family:ui-monospace,Menlo,
             <div class="field"><label>Zalo Bot Token</label><input id="cfgZaloToken" placeholder="123456:abc-xyz (lấy từ bot.zaloplatforms.com)"></div>
             <div class="field"><label>Zalo Chat ID nhận thông báo</label><input id="cfgZaloChatId" placeholder="ID cuộc trò chuyện của bot"></div>
           </div>
-          <p class="hint" style="margin-top:-8px;">Không cần cắm Webhook. Điền Bot Token ở trên, nhắn thử 1 tin bất kỳ cho bot từ Zalo, rồi bấm nút dưới — Apps Script sẽ tự hỏi Zalo để lấy Chat ID. Nếu bot đang có Webhook, vào app Zalo Bot bấm "Xoá Webhook" trước (2 cách này không dùng cùng lúc được).</p>
-          <button class="btn btn-ghost" id="fetchZaloChatIdBtn" type="button">📥 Lấy Chat ID từ tin nhắn vừa gửi</button>
+          <p class="hint" style="margin-top:-8px;">Không cần cắm Webhook (nếu bot đang có Webhook, vào app Zalo Bot bấm "Xoá Webhook" trước — 2 cách này không dùng cùng lúc được). Cách dùng: điền Bot Token ở trên → bấm nút dưới → hệ thống sẽ chờ tối đa 25 giây → <strong>ngay lúc đó</strong> mở Zalo và nhắn 1 tin cho bot (không nhắn trước khi bấm, phải nhắn trong lúc đang chờ mới bắt được).</p>
+          <button class="btn btn-ghost" id="fetchZaloChatIdBtn" type="button">📥 Chờ &amp; lấy Chat ID (25 giây)</button>
           <div class="msg" id="zaloChatIdMsg"></div>
 
           <button class="btn btn-primary" id="saveBookingSettingsBtn" type="button" style="margin-top:14px;">Lưu cấu hình lên Google Sheet</button>
@@ -1000,8 +1000,11 @@ document.getElementById('fetchZaloChatIdBtn').addEventListener('click', function
   var token = document.getElementById('cfgZaloToken').value.trim();
   if(!secret){ showMsg('zaloChatIdMsg', false, 'Vui lòng nhập Khoá bí mật ở trên trước.'); return; }
   if(!token){ showMsg('zaloChatIdMsg', false, 'Vui lòng điền Zalo Bot Token trước.'); return; }
-  showMsg('zaloChatIdMsg', true, 'Đang hỏi Zalo...');
+  var btn = document.getElementById('fetchZaloChatIdBtn');
+  btn.disabled = true;
+  showMsg('zaloChatIdMsg', true, '⏳ Đang chờ tin nhắn (tối đa 25 giây) — MỞ ZALO VÀ NHẮN NGAY 1 TIN CHO BOT BÂY GIỜ (đừng nhắn trước khi bấm nút này, phải nhắn trong lúc đang chờ).');
   apiGet({action:'fetchZaloUpdates', secret:secret, token:token}).then(function(res){
+    btn.disabled = false;
     if(res.chatId){
       document.getElementById('cfgZaloChatId').value = res.chatId;
       showMsg('zaloChatIdMsg', true, 'Đã lấy Chat ID: ' + res.chatId + (res.from ? ' (từ "'+res.from+'")' : '') + '. Nhớ bấm "Lưu cấu hình lên Google Sheet" để hoàn tất.');
@@ -1010,7 +1013,7 @@ document.getElementById('fetchZaloChatIdBtn').addEventListener('click', function
     }
     var extra = res.raw ? ('\n\nDữ liệu Zalo trả về (để đối chiếu nếu cần):\n' + res.raw) : '';
     showMsg('zaloChatIdMsg', false, (res.error || 'Chưa lấy được Chat ID.') + extra);
-  }).catch(function(err){ showMsg('zaloChatIdMsg', false, 'Không kết nối được: '+err.message); });
+  }).catch(function(err){ btn.disabled = false; showMsg('zaloChatIdMsg', false, 'Không kết nối được: '+err.message); });
 });
 
 document.getElementById('saveBookingSettingsBtn').addEventListener('click', function(){
