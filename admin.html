@@ -203,7 +203,7 @@ textarea.json-editor{width:100%;min-height:420px;font-family:ui-monospace,Menlo,
             <div class="field"><label>Zalo Bot Token</label><input id="cfgZaloToken" placeholder="123456:abc-xyz (lấy từ bot.zaloplatforms.com)"></div>
             <div class="field"><label>Zalo Chat ID nhận thông báo</label><input id="cfgZaloChatId" placeholder="ID cuộc trò chuyện của bot"></div>
           </div>
-          <p class="hint" style="margin-top:-8px;">Xem cách lấy Bot Token &amp; Chat ID trong README.md, mục "Thiết lập Zalo Bot". Sau khi đã cắm webhook và nhắn thử 1 tin cho bot, bấm nút dưới để tự động điền Chat ID.</p>
+          <p class="hint" style="margin-top:-8px;">Không cần cắm Webhook. Điền Bot Token ở trên, nhắn thử 1 tin bất kỳ cho bot từ Zalo, rồi bấm nút dưới — Apps Script sẽ tự hỏi Zalo để lấy Chat ID. Nếu bot đang có Webhook, vào app Zalo Bot bấm "Xoá Webhook" trước (2 cách này không dùng cùng lúc được).</p>
           <button class="btn btn-ghost" id="fetchZaloChatIdBtn" type="button">📥 Lấy Chat ID từ tin nhắn vừa gửi</button>
           <div class="msg" id="zaloChatIdMsg"></div>
 
@@ -997,19 +997,19 @@ document.getElementById('loadBookingSettingsBtn').addEventListener('click', func
 
 document.getElementById('fetchZaloChatIdBtn').addEventListener('click', function(){
   var secret = document.getElementById('secretKeyInput').value.trim();
+  var token = document.getElementById('cfgZaloToken').value.trim();
   if(!secret){ showMsg('zaloChatIdMsg', false, 'Vui lòng nhập Khoá bí mật ở trên trước.'); return; }
-  apiGet({action:'getLastZaloUpdate', secret:secret}).then(function(res){
-    if(!res.ok){ showMsg('zaloChatIdMsg', false, 'Lỗi: '+res.error); return; }
+  if(!token){ showMsg('zaloChatIdMsg', false, 'Vui lòng điền Zalo Bot Token trước.'); return; }
+  showMsg('zaloChatIdMsg', true, 'Đang hỏi Zalo...');
+  apiGet({action:'fetchZaloUpdates', secret:secret, token:token}).then(function(res){
     if(res.chatId){
       document.getElementById('cfgZaloChatId').value = res.chatId;
       showMsg('zaloChatIdMsg', true, 'Đã lấy Chat ID: ' + res.chatId + (res.from ? ' (từ "'+res.from+'")' : '') + '. Nhớ bấm "Lưu cấu hình lên Google Sheet" để hoàn tất.');
+      saveLocalFields();
       return;
     }
-    if(res.raw){
-      showMsg('zaloChatIdMsg', false, 'Nhận được dữ liệu từ Zalo nhưng chưa tự tách được Chat ID. Copy đoạn dữ liệu gốc dưới đây gửi lại để được hỗ trợ chỉnh:\n\n' + res.raw);
-      return;
-    }
-    showMsg('zaloChatIdMsg', false, 'Chưa nhận được tin nhắn nào. Kiểm tra lại: (1) Webhook URL trong app Zalo Bot đã đúng và đã bấm Lưu, (2) Apps Script đã Deploy bản mới nhất (Manage deployments > New version), (3) đã nhắn thử tin cho bot sau khi lưu webhook.');
+    var extra = res.raw ? ('\n\nDữ liệu Zalo trả về (để đối chiếu nếu cần):\n' + res.raw) : '';
+    showMsg('zaloChatIdMsg', false, (res.error || 'Chưa lấy được Chat ID.') + extra);
   }).catch(function(err){ showMsg('zaloChatIdMsg', false, 'Không kết nối được: '+err.message); });
 });
 
