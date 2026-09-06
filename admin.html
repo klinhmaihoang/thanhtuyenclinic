@@ -53,9 +53,10 @@ label{display:block;font-size:.82rem;font-weight:600;color:var(--maroon-700);mar
 @media (max-width:860px){.shell{grid-template-columns:1fr;}}
 .sidenav{border-right:1px solid var(--line);background:#fff;padding:18px 10px;}
 @media (max-width:860px){.sidenav{border-right:none;border-bottom:1px solid var(--line);display:flex;overflow-x:auto;gap:4px;}}
-.sidenav button{display:block;width:100%;text-align:left;padding:12px 14px;border-radius:10px;border:none;background:none;font-size:.9rem;font-weight:600;color:var(--ink-soft);white-space:nowrap;}
+.sidenav button{display:block;width:100%;text-align:left;padding:12px 14px;border-radius:10px;border:none;background:none;font-size:.9rem;font-weight:600;color:var(--ink-soft);white-space:normal;line-height:1.3;}
 .sidenav button:hover{background:var(--blush-100);}
 .sidenav button.active{background:var(--maroon-700);color:#fff;}
+@media (max-width:860px){.sidenav button{white-space:nowrap;}}
 .panels{padding:28px 32px;max-width:920px;}
 .panel{display:none;}
 .panel.active{display:block;}
