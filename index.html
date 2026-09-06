@@ -1590,7 +1590,7 @@ function initBookingUI(){
     var maxDate = new Date(today.getTime() + maxDays*86400000);
     dateInput.max = toISODate(maxDate);
 
-    populateSelect('bkBranch', res.branches.map(function(b){ return {value:b.BranchID, label:b.Ten}; }));
+    populateSelect('bkBranch', res.branches.map(function(b){ return {value:b['Mã chi nhánh'], label:b['Tên chi nhánh']}; }));
     populateDoctorsForBranch(document.getElementById('bkBranch').value);
   }).catch(function(err){
     showBookingError('Không kết nối được hệ thống đặt lịch. Vui lòng gọi hotline ' + (CONTENT.site.hotline||'') + '.');
@@ -1618,7 +1618,7 @@ function populateDoctorsForBranch(branchId){
   var doctors = BOOKING_CONFIG.doctors.filter(function(d){
     return !branchId || d.ChiNhanhIDs.indexOf(branchId) !== -1;
   });
-  populateSelect('bkDoctor', doctors.map(function(d){ return {value:d.DoctorID, label:d.Ten}; }));
+  populateSelect('bkDoctor', doctors.map(function(d){ return {value:d['Mã bác sĩ'], label:d['Họ và tên']}; }));
 }
 function maybeLoadSlots(){
   var date = document.getElementById('bkDate').value;
