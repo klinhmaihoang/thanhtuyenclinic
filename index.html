@@ -452,6 +452,9 @@ h2.h-lg{font-size:clamp(2.1rem,3.6vw,3rem);}
 .page-hero .kicker{justify-content:center;}
 .page-hero h1{font-size:clamp(2.2rem,4vw,3.2rem);}
 .breadcrumb{font-size:.85rem;color:var(--ink-soft);margin-bottom:16px;}
+.svc-detail-block{margin-bottom:36px;}
+.svc-detail-block:last-child{margin-bottom:0;}
+.svc-detail-block h2{margin-bottom:12px;}
 .breadcrumb a{color:var(--maroon-600);font-weight:600;}
 
 /* Category tabs (Dịch vụ) */
@@ -844,6 +847,72 @@ h2.h-lg{font-size:clamp(2.1rem,3.6vw,3rem);}
   </div>
 </section>
 
+<!-- ============================================================ SERVICE DETAIL ============================================================ -->
+<section class="page" data-page="service-detail">
+  <div class="page-hero" style="padding-bottom:40px;">
+    <div class="container">
+      <div class="breadcrumb"><a href="#/dich-vu" data-link>Dịch vụ</a> / <span id="svcDetailBreadcrumb"></span></div>
+      <h1 id="svcDetailTitle"></h1>
+      <p class="lede" id="svcDetailLede" style="margin:0 auto;"></p>
+    </div>
+  </div>
+
+  <div class="section" id="svcDetailNotFound" style="display:none;text-align:center;">
+    <div class="container">
+      <p>Không tìm thấy dịch vụ này. Có thể đường dẫn đã thay đổi.</p>
+      <a href="#/dich-vu" class="btn btn-ghost" data-link>Xem tất cả dịch vụ</a>
+    </div>
+  </div>
+
+  <div class="section" id="svcDetailBody">
+    <div class="container">
+      <div class="grid grid-2" style="gap:56px;align-items:flex-start;">
+        <div id="svcDetailMain">
+          <div class="svc-detail-block" id="blockWhatIsIt">
+            <h2 class="h-lg" style="font-size:1.4rem;">Dịch vụ này là gì?</h2>
+            <p id="txtWhatIsIt"></p>
+          </div>
+          <div class="svc-detail-block" id="blockProcess">
+            <h2 class="h-lg" style="font-size:1.4rem;">Quy trình thực hiện</h2>
+            <p id="txtProcess"></p>
+          </div>
+          <div class="svc-detail-block" id="blockAftercare">
+            <h2 class="h-lg" style="font-size:1.4rem;">Chăm sóc sau khi thực hiện</h2>
+            <p id="txtAftercare"></p>
+          </div>
+          <div class="svc-detail-block" id="blockVideo" style="margin-top:12px;">
+            <h2 class="h-lg" style="font-size:1.4rem;">Video liên quan</h2>
+            <div class="video-frame" style="aspect-ratio:16/9;">
+              <iframe id="svcDetailVideo" src="" title="Video dịch vụ" allowfullscreen></iframe>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="branch-card" style="margin-bottom:18px;" id="blockPrep">
+            <h3 style="font-size:1.05rem;">Hồ sơ cần chuẩn bị</h3>
+            <p class="addr" id="txtPrep" style="margin:0;"></p>
+          </div>
+          <div class="branch-card" style="margin-bottom:18px;" id="blockTests">
+            <h3 style="font-size:1.05rem;">Xét nghiệm cần chuẩn bị</h3>
+            <p class="addr" id="txtTests" style="margin:0;"></p>
+          </div>
+          <div class="branch-card" style="margin-bottom:18px;" id="blockDuration">
+            <h3 style="font-size:1.05rem;">Thời gian dự kiến</h3>
+            <p class="addr" id="txtDuration" style="margin:0;"></p>
+          </div>
+          <button class="btn btn-primary btn-block" data-open-modal>Đặt lịch tư vấn dịch vụ này</button>
+        </div>
+      </div>
+
+      <div class="svc-detail-block" id="blockBA" style="margin-top:56px;">
+        <div class="divider-petal"><span class="ic"></span></div>
+        <h2 class="h-lg" style="font-size:1.4rem;text-align:center;margin-bottom:32px;">Hình ảnh trước &amp; sau</h2>
+        <div class="grid grid-3" id="svcDetailBAWrap" style="max-width:460px;margin:0 auto;"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ============================================================ TEAM ============================================================ -->
 <section class="page" data-page="team">
   <div class="page-hero" data-intro="team">
@@ -1200,9 +1269,14 @@ var CONTENT = DEFAULT_CONTENT;
 var BOOKING_CONFIG = null; // trả về từ Apps Script getConfig (settings/branches/doctors)
 
 /* ---------------- RENDER HELPERS ---------------- */
+function slugifyVN(str){
+  return (str||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+}
+function serviceSlug(item){ return item.id || slugifyVN(item.n); }
 function svcCardHTML(item, cat){
-  var slug = item.n.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
-  return '<div class="service-card"><div class="ph ph-3x2"><span class="ph-label">Ảnh minh hoạ: '+item.n+'</span></div>'+
+  var slug = serviceSlug(item);
+  var thumb = item.beforeImage ? '<div class="ph ph-photo ph-3x2" style="background-image:url(\''+item.beforeImage+'\');background-size:cover;background-position:center;"></div>' : '<div class="ph ph-3x2"><span class="ph-label">Ảnh minh hoạ: '+item.n+'</span></div>';
+  return '<div class="service-card"><a href="#/dich-vu/'+slug+'" data-link>'+thumb+'</a>'+
     '<div class="body"><h3>'+item.n+'</h3><p>'+item.d+'</p>'+
     '<a href="#/dich-vu/'+slug+'" class="go" data-link>Xem chi tiết <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div></div>';
 }
@@ -1467,6 +1541,68 @@ function replacePhWithImage(elId, src, isFrame){
 /* ---------------- ROUTING ---------------- */
 var pages = document.querySelectorAll('.page');
 var navLinks = document.querySelectorAll('[data-route]');
+function findServiceBySlug(slug){
+  var services = CONTENT.services || {};
+  var cats = Object.keys(services);
+  for(var c=0;c<cats.length;c++){
+    var list = services[cats[c]] || [];
+    for(var i=0;i<list.length;i++){
+      if(serviceSlug(list[i]) === slug) return list[i];
+    }
+  }
+  return null;
+}
+function setBlockText(blockId, txtId, value){
+  var block = document.getElementById(blockId);
+  var txt = document.getElementById(txtId);
+  if(value){ txt.textContent = value; block.style.display = ''; }
+  else { block.style.display = 'none'; }
+}
+function renderServiceDetail(slug){
+  var item = findServiceBySlug(slug);
+  var notFound = document.getElementById('svcDetailNotFound');
+  var body = document.getElementById('svcDetailBody');
+  if(!item){
+    notFound.style.display = 'block';
+    body.style.display = 'none';
+    document.getElementById('svcDetailTitle').textContent = 'Không tìm thấy dịch vụ';
+    document.getElementById('svcDetailBreadcrumb').textContent = '';
+    document.getElementById('svcDetailLede').textContent = '';
+    return;
+  }
+  notFound.style.display = 'none';
+  body.style.display = '';
+  document.getElementById('svcDetailTitle').textContent = item.n;
+  document.getElementById('svcDetailBreadcrumb').textContent = item.n;
+  document.getElementById('svcDetailLede').textContent = item.d || '';
+
+  setBlockText('blockWhatIsIt', 'txtWhatIsIt', item.whatIsIt);
+  setBlockText('blockProcess', 'txtProcess', item.process);
+  setBlockText('blockAftercare', 'txtAftercare', item.aftercare);
+  setBlockText('blockPrep', 'txtPrep', item.prep);
+  setBlockText('blockTests', 'txtTests', item.tests);
+  setBlockText('blockDuration', 'txtDuration', item.duration);
+
+  var videoBlock = document.getElementById('blockVideo');
+  if(item.videoId){
+    videoBlock.style.display = '';
+    document.getElementById('svcDetailVideo').src = 'https://www.youtube.com/embed/' + item.videoId;
+  } else {
+    videoBlock.style.display = 'none';
+    document.getElementById('svcDetailVideo').src = '';
+  }
+
+  var baBlock = document.getElementById('blockBA');
+  var baWrap = document.getElementById('svcDetailBAWrap');
+  if(item.beforeImage || item.afterImage){
+    baBlock.style.display = '';
+    baWrap.innerHTML = baCardHTML({ t:item.n, s:'Ảnh minh hoạ trước/sau', beforeImage:item.beforeImage, afterImage:item.afterImage });
+    initBASliders();
+  } else {
+    baBlock.style.display = 'none';
+    baWrap.innerHTML = '';
+  }
+}
 function routeToPage(hash){
   hash = (hash || '#/').replace('#','');
   if(hash === '' ) hash = '/';
@@ -1482,8 +1618,12 @@ function routeToPage(hash){
   };
   var key = seg[0] || '';
   var target = map[key] || 'home';
+  if(key === 'dich-vu' && seg[1]){
+    target = 'service-detail';
+    renderServiceDetail(seg[1]);
+  }
   pages.forEach(function(p){ p.classList.toggle('active', p.dataset.page === target); });
-  navLinks.forEach(function(l){ l.classList.toggle('active', l.dataset.route === target); });
+  navLinks.forEach(function(l){ l.classList.toggle('active', l.dataset.route === (target==='service-detail'?'services':target)); });
   window.scrollTo({top:0, behavior:'instant' in document.documentElement.style ? 'instant' : 'auto'});
   closeMobile();
 }
