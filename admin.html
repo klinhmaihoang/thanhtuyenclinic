@@ -665,16 +665,41 @@ function renderServicesAdmin(){
   wrap.innerHTML = SERVICE_CATS.map(function(cat){
     var items = draft.services[cat.key] || [];
     var rows = items.map(function(it, i){
+      var base = 'services.'+cat.key+'['+i+']';
       return '<div class="list-item">'+
         '<button type="button" class="remove-btn" data-remove-svc="'+cat.key+':'+i+'">Xoá</button>'+
-        '<div class="field"><label>Tên dịch vụ</label><input data-bind="services.'+cat.key+'['+i+'].n"></div>'+
-        '<div class="field"><label>Mô tả ngắn</label><textarea rows="2" data-bind="services.'+cat.key+'['+i+'].d"></textarea></div>'+
+        '<div class="field"><label>Tên dịch vụ</label><input data-bind="'+base+'.n"></div>'+
+        '<div class="field"><label>Mô tả ngắn (hiển thị ở thẻ dịch vụ)</label><textarea rows="2" data-bind="'+base+'.d"></textarea></div>'+
+        '<details><summary style="cursor:pointer;color:var(--maroon-600);font-weight:600;font-size:.88rem;margin-bottom:12px;">📄 Nội dung trang chi tiết (mô tả đầy đủ, quy trình, hồ sơ, ảnh trước-sau, video...)</summary>'+
+          '<div class="field"><label>Dịch vụ này là gì?</label><textarea rows="3" data-bind="'+base+'.whatIsIt"></textarea></div>'+
+          '<div class="field"><label>Quy trình thực hiện</label><textarea rows="4" data-bind="'+base+'.process"></textarea></div>'+
+          '<div class="row row-2">'+
+            '<div class="field"><label>Hồ sơ cần chuẩn bị</label><textarea rows="2" data-bind="'+base+'.prep"></textarea></div>'+
+            '<div class="field"><label>Xét nghiệm cần chuẩn bị</label><textarea rows="2" data-bind="'+base+'.tests"></textarea></div>'+
+          '</div>'+
+          '<div class="field"><label>Thời gian dự kiến</label><input data-bind="'+base+'.duration" placeholder="Vd: 60–90 phút"></div>'+
+          '<div class="field"><label>Chăm sóc sau khi thực hiện (mau lành)</label><textarea rows="3" data-bind="'+base+'.aftercare"></textarea></div>'+
+          '<div class="row row-2">'+
+            imageUploaderHTML(base+'.beforeImage', 'Ảnh TRƯỚC', it.beforeImage)+
+            imageUploaderHTML(base+'.afterImage', 'Ảnh SAU', it.afterImage)+
+          '</div>'+
+          '<div class="field"><label>Video Youtube cho dịch vụ này (tuỳ chọn)</label><input class="svc-yt-input" data-cat="'+cat.key+'" data-idx="'+i+'" value="'+esc(it.videoId||'')+'" placeholder="Dán link hoặc mã Youtube"></div>'+
+        '</details>'+
         '</div>';
     }).join('') || '<p class="hint">Chưa có dịch vụ nào trong nhóm này.</p>';
     return '<h3 style="font-size:1rem;margin-top:22px;">'+cat.label+'</h3>' + rows +
       '<button type="button" class="btn btn-ghost" data-add-svc="'+cat.key+'" style="margin-bottom:10px;">+ Thêm dịch vụ vào "'+cat.label+'"</button>';
   }).join('<hr style="border:none;border-top:1px solid var(--line);margin:18px 0;">');
   bindForm(wrap);
+  wireImageUploaders(wrap);
+  wrap.querySelectorAll('.svc-yt-input').forEach(function(inp){
+    inp.addEventListener('change', function(){
+      var val = extractYoutubeId(inp.value);
+      inp.value = val;
+      draft.services[inp.dataset.cat][Number(inp.dataset.idx)].videoId = val;
+      markDirty();
+    });
+  });
   wrap.querySelectorAll('[data-remove-svc]').forEach(function(btn){
     btn.addEventListener('click', function(){
       var parts = btn.dataset.removeSvc.split(':');
@@ -686,7 +711,7 @@ function renderServicesAdmin(){
     btn.addEventListener('click', function(){
       var cat = btn.dataset.addSvc;
       draft.services[cat] = draft.services[cat] || [];
-      draft.services[cat].push({n:'Dịch vụ mới', d:''});
+      draft.services[cat].push({n:'Dịch vụ mới', d:'', whatIsIt:'', process:'', prep:'', tests:'', duration:'', aftercare:'', beforeImage:'', afterImage:'', videoId:''});
       markDirty(); renderServicesAdmin();
     });
   });
