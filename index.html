@@ -266,6 +266,7 @@ h2.h-lg{font-size:clamp(2.1rem,3.6vw,3rem);}
   color:var(--maroon-600);text-align:center;padding:20px;
 }
 .ph::before{content:'';position:absolute;inset:0;background:var(--petal-icon) center/32% no-repeat;opacity:.22;}
+.ph.ph-photo::before{content:none;}
 .ph .ph-ic{width:34px;height:34px;opacity:.7;position:relative;z-index:1;}
 .ph .ph-label{font-size:.76rem;color:var(--maroon-700);position:relative;z-index:1;max-width:22ch;line-height:1.4;}
 .ph-1x1{aspect-ratio:1/1;}
@@ -1257,7 +1258,7 @@ function formatPhone(p){
   return p.replace(/(\d{4})(\d{3})(\d{3})/, '$1 $2 $3');
 }
 function blogCardHTML(p, idx){
-  var img = p.image ? '<div class="ph ph-3x2" style="border-radius:0;background-image:url(\''+p.image+'\');background-size:cover;background-position:center;"></div>' : '<div class="ph ph-3x2" style="border-radius:0;"><span class="ph-label">Ảnh bài viết</span></div>';
+  var img = p.image ? '<div class="ph ph-photo ph-3x2" style="border-radius:0;background-image:url(\''+p.image+'\');background-size:cover;background-position:center;"></div>' : '<div class="ph ph-3x2" style="border-radius:0;"><span class="ph-label">Ảnh bài viết</span></div>';
   return '<div class="post-card" data-blog-idx="'+idx+'" style="cursor:pointer;">'+img+
     '<div class="pbody"><div class="pdate">'+(p.tag||'')+'</div><h3>'+p.title+'</h3><span class="go">Đọc tiếp →</span></div></div>';
 }
@@ -1301,7 +1302,7 @@ function renderFaq(){
   }
 }
 function baImgHTML(src, label, isPlaceholderTinted){
-  if(src) return '<div class="ph ph-3x2" style="height:100%;width:100%;border-radius:0;background-image:url(\''+src+'\');background-size:cover;background-position:center;"></div>';
+  if(src) return '<div class="ph ph-photo ph-3x2" style="height:100%;width:100%;border-radius:0;background-image:url(\''+src+'\');background-size:cover;background-position:center;"></div>';
   var bg = isPlaceholderTinted ? 'background:linear-gradient(155deg,var(--blush-300),var(--maroon-500));' : '';
   var color = isPlaceholderTinted ? 'style="color:#fff;"' : '';
   return '<div class="ph ph-3x2" style="height:100%;width:100%;border-radius:0;'+bg+'"><span class="ph-label" '+color+'>'+label+'</span></div>';
