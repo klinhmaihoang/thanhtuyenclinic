@@ -317,8 +317,9 @@ h2.h-lg{font-size:clamp(2.1rem,3.6vw,3rem);}
 /* ============ BEFORE / AFTER SLIDER ============ */
 .ba-card{border-radius:var(--radius-m);overflow:hidden;box-shadow:var(--shadow-soft);background:#fff;}
 .ba-compare{position:relative;aspect-ratio:4/3;overflow:hidden;user-select:none;touch-action:pan-y;}
-.ba-compare .ba-img{position:absolute;inset:0;}
-.ba-compare .ba-after{position:absolute;inset:0;overflow:hidden;}
+.ba-compare .ba-layer{position:absolute;inset:0;}
+.ba-compare .ba-layer.ba-layer-before{z-index:2;}
+.ba-compare .ba-layer.ba-layer-after{z-index:1;}
 .ba-tag{position:absolute;top:14px;font-size:.72rem;font-weight:700;letter-spacing:.04em;color:#fff;background:rgba(59,11,30,.72);padding:5px 12px;border-radius:999px;z-index:3;}
 .ba-tag.before{left:14px;}
 .ba-tag.after{right:14px;}
@@ -1299,14 +1300,16 @@ function renderFaq(){
     });
   }
 }
-function baImgHTML(src, label, color){
-  if(src) return '<div class="ph ph-3x2" style="height:100%;border-radius:0;background-image:url(\''+src+'\');background-size:cover;background-position:center;"></div>';
-  return '<div class="ph ph-3x2" style="height:100%;border-radius:0;'+(color?'background:linear-gradient(155deg,var(--blush-300),var(--maroon-500));':'')+'"><span class="ph-label" '+(color?'style="color:#fff;"':'')+'>'+label+'</span></div>';
+function baImgHTML(src, label, isPlaceholderTinted){
+  if(src) return '<div class="ph ph-3x2" style="height:100%;width:100%;border-radius:0;background-image:url(\''+src+'\');background-size:cover;background-position:center;"></div>';
+  var bg = isPlaceholderTinted ? 'background:linear-gradient(155deg,var(--blush-300),var(--maroon-500));' : '';
+  var color = isPlaceholderTinted ? 'style="color:#fff;"' : '';
+  return '<div class="ph ph-3x2" style="height:100%;width:100%;border-radius:0;'+bg+'"><span class="ph-label" '+color+'>'+label+'</span></div>';
 }
 function baCardHTML(c){
   return '<div class="ba-card"><div class="ba-compare" data-ba>'+
-    '<div class="ba-img">'+baImgHTML(c.beforeImage, 'Ảnh TRƯỚC')+'</div>'+
-    '<div class="ba-after" style="width:50%;">'+baImgHTML(c.afterImage, 'Ảnh SAU', true).replace('ph-3x2','ph-3x2" style="width:200%;height:100%')+'</div>'+
+    '<div class="ba-layer ba-layer-after">'+baImgHTML(c.afterImage, 'Ảnh SAU', true)+'</div>'+
+    '<div class="ba-layer ba-layer-before" data-ba-before-layer>'+baImgHTML(c.beforeImage, 'Ảnh TRƯỚC')+'</div>'+
     '<span class="ba-tag before">TRƯỚC</span><span class="ba-tag after">SAU</span>'+
     '<div class="ba-handle" data-ba-handle></div>'+
     '</div><div class="ba-meta"><h4>'+c.t+'</h4><span>'+c.s+'</span><br><span class="ba-note">'+((c.beforeImage&&c.afterImage)?'Ảnh khách hàng thực tế':'Ảnh minh hoạ — sẽ thay bằng ảnh thật')+'</span></div></div>';
@@ -1331,11 +1334,14 @@ function initBASliders(){
   document.querySelectorAll('[data-ba]').forEach(function(box){
     if(box.dataset.baInit) return;
     box.dataset.baInit = '1';
-    var after = box.querySelector('.ba-after');
+    var beforeLayer = box.querySelector('[data-ba-before-layer]');
     var handle = box.querySelector('[data-ba-handle]');
     function setPos(pct){
       pct = Math.max(4, Math.min(96, pct));
-      after.style.width = pct + '%';
+      // Chỉ hiện phần bên trái (TRƯỚC) tới vị trí pct%, phần còn lại clip đi
+      // để lộ lớp SAU nằm bên dưới — không phụ thuộc vào trick width% nên
+      // luôn đúng dù kéo tới đâu.
+      beforeLayer.style.clipPath = 'inset(0 ' + (100 - pct) + '% 0 0)';
       handle.style.left = pct + '%';
     }
     setPos(50);
