@@ -455,6 +455,19 @@ h2.h-lg{font-size:clamp(2.1rem,3.6vw,3rem);}
 .svc-detail-block{margin-bottom:36px;}
 .svc-detail-block:last-child{margin-bottom:0;}
 .svc-detail-block h2{margin-bottom:12px;}
+.svc-content-col{max-width:780px;margin:0 auto;}
+.svc-ba-large{max-width:900px;margin:0 auto;}
+.svc-ba-large .ba-compare{aspect-ratio:16/10;}
+/* Nội dung rich-text do admin tự soạn (heading/màu chữ/bullet tự do) */
+.svc-richtext{color:var(--ink-soft);line-height:1.75;}
+.svc-richtext h1,.svc-richtext h2,.svc-richtext h3{color:var(--maroon-700);margin:1.2em 0 .5em;line-height:1.25;}
+.svc-richtext h1{font-size:1.7rem;}
+.svc-richtext h2{font-size:1.4rem;}
+.svc-richtext h3{font-size:1.15rem;}
+.svc-richtext p{margin:0 0 1em;color:inherit;max-width:none;}
+.svc-richtext ul,.svc-richtext ol{margin:0 0 1em;padding-left:1.4em;}
+.svc-richtext li{margin-bottom:.4em;}
+.svc-richtext > *:first-child{margin-top:0;}
 .breadcrumb a{color:var(--maroon-600);font-weight:600;}
 
 /* Category tabs (Dịch vụ) */
@@ -866,48 +879,39 @@ h2.h-lg{font-size:clamp(2.1rem,3.6vw,3rem);}
 
   <div class="section" id="svcDetailBody">
     <div class="container">
-      <div class="grid grid-2" style="gap:56px;align-items:flex-start;">
-        <div id="svcDetailMain">
-          <div class="svc-detail-block" id="blockWhatIsIt">
-            <h2 class="h-lg" style="font-size:1.4rem;">Dịch vụ này là gì?</h2>
-            <p id="txtWhatIsIt"></p>
-          </div>
-          <div class="svc-detail-block" id="blockProcess">
-            <h2 class="h-lg" style="font-size:1.4rem;">Quy trình thực hiện</h2>
-            <p id="txtProcess"></p>
-          </div>
-          <div class="svc-detail-block" id="blockAftercare">
-            <h2 class="h-lg" style="font-size:1.4rem;">Chăm sóc sau khi thực hiện</h2>
-            <p id="txtAftercare"></p>
-          </div>
-          <div class="svc-detail-block" id="blockVideo" style="margin-top:12px;">
-            <h2 class="h-lg" style="font-size:1.4rem;">Video liên quan</h2>
-            <div class="video-frame" style="aspect-ratio:16/9;">
-              <iframe id="svcDetailVideo" src="" title="Video dịch vụ" allowfullscreen></iframe>
-            </div>
-          </div>
+      <div class="grid grid-3" id="svcDetailFacts" style="margin-bottom:44px;">
+        <div class="branch-card" id="blockPrep">
+          <h3 style="font-size:1.05rem;">Hồ sơ cần chuẩn bị</h3>
+          <p class="addr" id="txtPrep" style="margin:0;"></p>
         </div>
-        <div>
-          <div class="branch-card" style="margin-bottom:18px;" id="blockPrep">
-            <h3 style="font-size:1.05rem;">Hồ sơ cần chuẩn bị</h3>
-            <p class="addr" id="txtPrep" style="margin:0;"></p>
-          </div>
-          <div class="branch-card" style="margin-bottom:18px;" id="blockTests">
-            <h3 style="font-size:1.05rem;">Xét nghiệm cần chuẩn bị</h3>
-            <p class="addr" id="txtTests" style="margin:0;"></p>
-          </div>
-          <div class="branch-card" style="margin-bottom:18px;" id="blockDuration">
-            <h3 style="font-size:1.05rem;">Thời gian dự kiến</h3>
-            <p class="addr" id="txtDuration" style="margin:0;"></p>
-          </div>
-          <button class="btn btn-primary btn-block" data-open-modal>Đặt lịch tư vấn dịch vụ này</button>
+        <div class="branch-card" id="blockTests">
+          <h3 style="font-size:1.05rem;">Xét nghiệm cần chuẩn bị</h3>
+          <p class="addr" id="txtTests" style="margin:0;"></p>
+        </div>
+        <div class="branch-card" id="blockDuration">
+          <h3 style="font-size:1.05rem;">Thời gian dự kiến</h3>
+          <p class="addr" id="txtDuration" style="margin:0;"></p>
         </div>
       </div>
 
-      <div class="svc-detail-block" id="blockBA" style="margin-top:56px;">
+      <div class="svc-content-col">
+        <div class="svc-detail-block svc-richtext" id="txtContent"></div>
+
+        <div class="svc-detail-block" id="blockVideo">
+          <div class="video-frame" style="aspect-ratio:16/9;">
+            <iframe id="svcDetailVideo" src="" title="Video dịch vụ" allowfullscreen></iframe>
+          </div>
+        </div>
+
+        <div class="svc-detail-block" style="text-align:center;">
+          <button class="btn btn-primary" data-open-modal>Đặt lịch tư vấn dịch vụ này</button>
+        </div>
+      </div>
+
+      <div class="svc-detail-block" id="blockBA" style="margin-top:24px;">
         <div class="divider-petal"><span class="ic"></span></div>
-        <h2 class="h-lg" style="font-size:1.4rem;text-align:center;margin-bottom:32px;">Hình ảnh trước &amp; sau</h2>
-        <div class="grid grid-3" id="svcDetailBAWrap" style="max-width:460px;margin:0 auto;"></div>
+        <h2 class="h-lg" style="font-size:1.5rem;text-align:center;margin-bottom:32px;">Hình ảnh trước &amp; sau</h2>
+        <div id="svcDetailBAWrap" class="svc-ba-large"></div>
       </div>
     </div>
   </div>
@@ -1576,12 +1580,17 @@ function renderServiceDetail(slug){
   document.getElementById('svcDetailBreadcrumb').textContent = item.n;
   document.getElementById('svcDetailLede').textContent = item.d || '';
 
-  setBlockText('blockWhatIsIt', 'txtWhatIsIt', item.whatIsIt);
-  setBlockText('blockProcess', 'txtProcess', item.process);
-  setBlockText('blockAftercare', 'txtAftercare', item.aftercare);
+  // Nội dung tự do (heading/màu chữ/bullet do admin tự soạn) — chèn thẳng
+  // dạng HTML admin đã soạn, không ép format cố định.
+  var contentEl = document.getElementById('txtContent');
+  contentEl.innerHTML = item.content || '';
+  contentEl.style.display = item.content ? '' : 'none';
+
   setBlockText('blockPrep', 'txtPrep', item.prep);
   setBlockText('blockTests', 'txtTests', item.tests);
   setBlockText('blockDuration', 'txtDuration', item.duration);
+  var factsRow = document.getElementById('svcDetailFacts');
+  factsRow.style.display = (item.prep || item.tests || item.duration) ? '' : 'none';
 
   var videoBlock = document.getElementById('blockVideo');
   if(item.videoId){
